@@ -13,11 +13,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^4.0.0",
-    "astro": "^1.9.2",
-    "express": "^4.18.2",
-    "html-minifier-terser": "^7.1.0",
-    "multipipe": "^4.0.0",
-    "node-mocks-http": "^1.12.1"
+    "astro": "^1.9.2"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
