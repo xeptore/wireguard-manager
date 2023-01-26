@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        montserrat: ["Montserrat", "sans-serif"],
+        cantarell: ["Cantarell", "sans-serif"],
       },
     },
   },
