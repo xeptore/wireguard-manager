@@ -1,9 +1,19 @@
 ---
 import Dashboard from "../layouts/Dashboard.astro";
+import Modal from "../components/Modal.svelte";
 ---
+
+<script>
+  const createClientButton = document.getElementById('createClientButton');
+  createClientButton?.addEventListener('clieck', () => {
+    console.log('handling this...')
+    document.getElementById('shit')?.classList.remove('hidden');
+  });
+</script>
 
 <Dashboard title="Clients">
   <main class="lg:w-11/12 xl:w-5/6 m-auto">
+      <Modal client:only="svelte" />
     <section class="pt-6 mb-6 flex items-center justify-between">
       <div class="flex items-center justify-start">
         <span class="inline-flex justify-center items-center w-6 h-6 mr-2">
@@ -19,6 +29,7 @@ import Dashboard from "../layouts/Dashboard.astro";
       <button
         role="button"
         type="button"
+        id="createClientButton"
         class="ring-gray-500 bg-gray-700 text-white hover:bg-gray-600 p-2 px-3 inline-flex justify-center items-center focus:outline-none transition-all duration-200 focus:ring-1 hover:ring-1 cursor-pointer rounded-lg"
         type="button"
       >
