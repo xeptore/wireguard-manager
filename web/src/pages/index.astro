@@ -1,682 +1,432 @@
-<!DOCTYPE html>
-<html lang="en" class="dark-scrollbars-compat">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      progress {
-        @apply h-3 rounded-full overflow-hidden;
-      }
+---
+import Dashboard from "../layouts/Dashboard.astro";
+---
 
-      progress::-webkit-progress-bar {
-        @apply bg-blue-200;
-      }
-
-      progress::-webkit-progress-value {
-        @apply bg-blue-500;
-      }
-
-      progress::-moz-progress-bar {
-        @apply bg-blue-500;
-      }
-
-      progress::-ms-fill {
-        @apply bg-blue-500 border-0;
-      }
-      table {
-        @apply w-full;
-      }
-
-      thead {
-        @apply hidden lg:table-header-group;
-      }
-
-      tr {
-        @apply max-w-full block relative border-b-4 border-gray-100
-      lg:table-row lg:border-b-0 dark:border-slate-800;
-      }
-
-      tr:last-child {
-        @apply border-b-0;
-      }
-
-      td:not(:first-child) {
-        @apply lg:border-l lg:border-t-0 lg:border-r-0 lg:border-b-0 lg:border-gray-100 lg:dark:border-slate-700;
-      }
-
-      th {
-        @apply lg:text-left lg:p-3;
-      }
-
-      td {
-        @apply flex justify-between text-right py-3 px-4 align-top border-b border-gray-100
-      lg:table-cell lg:text-left lg:p-3 lg:align-middle lg:border-b-0 dark:border-slate-800;
-      }
-
-      td:last-child {
-        @apply border-b-0;
-      }
-
-      tbody tr,
-      tbody tr:nth-child(odd) {
-        @apply lg:hover:bg-gray-100 lg:dark:hover:bg-slate-700/70;
-      }
-
-      tbody tr:nth-child(odd) {
-        @apply lg:bg-gray-100/50 lg:dark:bg-slate-800/50;
-      }
-
-      td:before {
-        content: attr(data-label);
-        @apply font-semibold pr-3 text-left lg:hidden;
-      }
-      html {
-        scrollbar-width: thin;
-        scrollbar-color: rgb(156, 163, 175) rgb(249, 250, 251);
-      }
-
-      body::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-
-      body::-webkit-scrollbar-track {
-        @apply bg-gray-50;
-      }
-
-      body::-webkit-scrollbar-thumb {
-        @apply bg-gray-400 rounded;
-      }
-
-      body::-webkit-scrollbar-thumb:hover {
-        @apply bg-gray-500;
-      }
-
-      .dark-scrollbars-compat {
-        scrollbar-color: rgb(71, 85, 105) rgb(30, 41, 59);
-      }
-
-      .dark-scrollbars::-webkit-scrollbar-track {
-        @apply bg-slate-800;
-      }
-
-      .dark-scrollbars::-webkit-scrollbar-thumb {
-        @apply bg-slate-600;
-      }
-
-      .dark-scrollbars::-webkit-scrollbar-thumb:hover {
-        @apply bg-slate-500;
-      }
-    </style>
-    <title>Dashboard</title>
-  </head>
-  <body
-    class="dark font-montserrat bg-slate-800 text-slate-100 dark-scrollbars min-h-screen antialiased text-sm flex h-full 2xl:max-w-[1920px]"
-  >
-    <aside
-      class="w-1/5 lg:hidden xl:flex lg:p-2 flex h-screen transition-position overflow-hidden"
-    >
-      <div
-        class="lg:rounded-lg flex-1 flex flex-col overflow-hidden dark:bg-slate-900 bg-white"
-      >
-        <div
-          class="flex flex-row h-14 items-center justify-between dark:bg-slate-900 border-b-2 dark:border-b-slate-800"
-        >
-          <div
-            class="text-center flex-1 lg:text-left lg:pl-6 xl:text-center xl:pl-0"
-          >
-            <b class="font-bold text-xl">WireGuard</b>
-          </div>
-          <button class="hidden lg:inline-block xl:hidden p-3">
-            <span class="inline-flex justify-center items-center w-6 h-6">
-              <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                class="inline-block"
-              >
-                <path
-                  fill="currentColor"
-                  d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-                ></path>
-              </svg>
-            </span>
-          </button>
-        </div>
-        <div
-          class="flex-1 overflow-y-auto overflow-x-hidden aside-scrollbars-[slate]"
-        >
-          <ul>
-            <li class="hover:bg-slate-700 duration-150">
-              <a
-                class="flex cursor-pointer py-3 text-blue-600 hover:text-black dark:text-white dark:hover:text-white"
-                href="/admin-one-react-tailwind/dashboard"
-              >
-                <span
-                  class="inline-flex justify-center items-center w-16 h-6 flex-none font-bold text-black dark:text-white"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    class="inline-block"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z"
-                    ></path>
-                  </svg>
-                </span>
-                <span
-                  class="grow text-ellipsis line-clamp-1 pr-12 font-medium text-black dark:text-white"
-                  >Dashboard</span
-                >
-              </a>
-            </li>
-          </ul>
-        </div>
-        <ul>
-          <li>
-            <div
-              class="flex cursor-pointer py-3 border-blue-600 dark:border-blue-500 ring-blue-300 dark:ring-blue-700 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600"
-            >
-              <span
-                class="inline-flex justify-center items-center w-16 h-6 flex-none"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  class="inline-block"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"
-                  ></path>
-                </svg>
-              </span>
-              <span class="grow text-ellipsis line-clamp-1 pr-12">Logout</span>
-            </div>
-          </li>
-        </ul>
+<Dashboard title="Clients">
+  <main class="lg:w-11/12 xl:w-5/6 m-auto">
+    <section class="pt-6 mb-6 flex items-center justify-between">
+      <div class="flex items-center justify-start">
+        <span class="inline-flex justify-center items-center w-6 h-6 mr-2">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="inline-block">
+            <path
+              fill="currentColor"
+              d="M16 17V19H2V17S2 13 9 13 16 17 16 17M12.5 7.5A3.5 3.5 0 1 0 9 11A3.5 3.5 0 0 0 12.5 7.5M15.94 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13M15 4A3.39 3.39 0 0 0 13.07 4.59A5 5 0 0 1 13.07 10.41A3.39 3.39 0 0 0 15 11A3.5 3.5 0 0 0 15 4Z"
+            ></path>
+          </svg>
+        </span>
+        <h1 class="leading-tight text-2xl">Clients</h1>
       </div>
-    </aside>
-    <div class="w-4/5">
-      <nav class="h-16 pr-2 mb-4 z-30 transition-position">
-        <div class="h-full justify-end flex lg:items-stretch border-b border-slate-700">
-          <div
-            class="hidden overflow-y-auto lg:overflow-visible shadow-lg lg:w-auto lg:flex lg:static lg:shadow-none"
-          >
-            <div
-              class="block lg:flex items-center relative cursor-pointer dark:text-white dark:hover:text-slate-400 hover:text-black lg:py-2 lg:px-3"
-            >
-              <div
-                class="flex items-center lg:bg-transparent lg:dark:bg-transparent p-3 lg:p-0"
-              >
-                <div
-                  class="h-10 border-2 border-indigo-200 hover:border-indigo-300 rounded-full inline-flex"
-                >
+      <button
+        role="button"
+        type="button"
+        class="ring-gray-500 bg-gray-700 text-white hover:bg-gray-600 p-2 px-3 inline-flex justify-center items-center focus:outline-none transition-all duration-200 focus:ring-1 hover:ring-1 cursor-pointer rounded-lg"
+        type="button"
+      >
+        <span>+</span>
+        <div class="ml-3 xs:block">Create New</div>
+      </button>
+    </section>
+    <div class="flex rounded-xl flex-col bg-gray-900/70">
+      <div class="flex-1">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Company</th>
+              <th>City</th>
+              <th>Progress</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border-b-0 lg:w-6 before:hidden">
+                <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
                   <img
-                    src="https://api.dicebear.com/5.x/big-ears-neutral/svg?seed=Whiskers"
-                    alt="avatar"
-                    class="block h-auto w-full max-w-full rounded-full"
+                    src="https://avatars.dicebear.com/api/avataaars/Howell-Hand.svg"
+                    alt="Howell Hand"
+                    class="rounded-full block h-auto w-full max-w-full bg-gray-800"
                   />
                 </div>
-                <span class="px-2 transition-colors">John Doe</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main class="lg:w-5/6 m-auto">
-        <section class="pt-6 mb-6 flex items-center justify-between">
-          <div class="flex items-center justify-start">
-            <span class="inline-flex justify-center items-center w-6 h-6 mr-2">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                class="inline-block"
-              >
-                <path
-                  fill="currentColor"
-                  d="M16 17V19H2V17S2 13 9 13 16 17 16 17M12.5 7.5A3.5 3.5 0 1 0 9 11A3.5 3.5 0 0 0 12.5 7.5M15.94 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13M15 4A3.39 3.39 0 0 0 13.07 4.59A5 5 0 0 1 13.07 10.41A3.39 3.39 0 0 0 15 11A3.5 3.5 0 0 0 15 4Z"
-                ></path>
-              </svg>
-            </span>
-            <h1 class="leading-tight text-2xl">Clients</h1>
-          </div>
-          <button
-            class="dark:border-blue-500 dark:ring-blue-700 dark:bg-blue-500 dark:text-white hover:dark:bg-blue-600 hover:dark:border-blue-600 p-2 px-3 inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 cursor-pointer rounded-lg"
-            type="button"
-          >
-            <span>+</span>
-            <div class="ml-3 xs:block">Create New</div>
-          </button>
-        </section>
-        <div class="bg-white flex rounded-xl flex-col dark:bg-slate-900/70">
-          <div class="flex-1">
-            <table>
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Name</th>
-                  <th>Company</th>
-                  <th>City</th>
-                  <th>Progress</th>
-                  <th>Created</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border-b-0 lg:w-6 before:hidden">
-                    <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
-                      <img
-                        src="https://avatars.dicebear.com/api/avataaars/Howell-Hand.svg"
-                        alt="Howell Hand"
-                        class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800"
-                      />
-                    </div>
-                  </td>
-                  <td class="">Howell Hand</td>
-                  <td>Kiehn-Green</td>
-                  <td>Emelyside</td>
-                  <td class="lg:w-32">
-                    <progress
-                      class="flex w-2/5 self-center lg:w-full"
-                      max="100"
-                      value="70">70</progress
-                    >
-                  </td>
-                  <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400"
-                      >Mar 3, 2022</small
-                    >
-                  </td>
-                  <td class="before:hidden lg:w-1 whitespace-nowrap">
-                    <div
-                      class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
-                    >
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-600 dark:border-blue-500 ring-blue-300 dark:ring-blue-700 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-600 dark:border-red-500 ring-red-300 dark:ring-red-700 bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 hover:border-red-700 hover:dark:bg-red-600 hover:dark:border-red-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border-b-0 lg:w-6 before:hidden">
-                    <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
-                      <img
-                        src="https://avatars.dicebear.com/api/avataaars/Hope-Howe.svg"
-                        alt="Hope Howe"
-                        class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800"
-                      />
-                    </div>
-                  </td>
-                  <td data-label="Name">Hope Howe</td>
-                  <td data-label="Company">Nolan Inc</td>
-                  <td data-label="City">Paristown</td>
-                  <td data-label="Progress" class="lg:w-32">
-                    <progress
-                      class="flex w-2/5 self-center lg:w-full"
-                      max="100"
-                      value="68">68</progress
-                    >
-                  </td>
-                  <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400"
-                      >Dec 1, 2022</small
-                    >
-                  </td>
-                  <td class="before:hidden lg:w-1 whitespace-nowrap">
-                    <div
-                      class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
-                    >
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-600 dark:border-blue-500 ring-blue-300 dark:ring-blue-700 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-600 dark:border-red-500 ring-red-300 dark:ring-red-700 bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 hover:border-red-700 hover:dark:bg-red-600 hover:dark:border-red-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border-b-0 lg:w-6 before:hidden">
-                    <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
-                      <img
-                        src="https://avatars.dicebear.com/api/avataaars/Nelson-Jerde.svg"
-                        alt="Nelson Jerde"
-                        class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800"
-                      />
-                    </div>
-                  </td>
-                  <td data-label="Name">Nelson Jerde</td>
-                  <td data-label="Company">Nitzsche LLC</td>
-                  <td data-label="City">Jailynbury</td>
-                  <td data-label="Progress" class="lg:w-32">
-                    <progress
-                      class="flex w-2/5 self-center lg:w-full"
-                      max="100"
-                      value="49">49</progress
-                    >
-                  </td>
-                  <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400"
-                      >May 18, 2022</small
-                    >
-                  </td>
-                  <td class="before:hidden lg:w-1 whitespace-nowrap">
-                    <div
-                      class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
-                    >
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-600 dark:border-blue-500 ring-blue-300 dark:ring-blue-700 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-600 dark:border-red-500 ring-red-300 dark:ring-red-700 bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 hover:border-red-700 hover:dark:bg-red-600 hover:dark:border-red-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border-b-0 lg:w-6 before:hidden">
-                    <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
-                      <img
-                        src="https://avatars.dicebear.com/api/avataaars/Kim-Weimann.svg"
-                        alt="Kim Weimann"
-                        class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800"
-                      />
-                    </div>
-                  </td>
-                  <td data-label="Name">Kim Weimann</td>
-                  <td data-label="Company">Brown-Lueilwitz</td>
-                  <td data-label="City">New Emie</td>
-                  <td data-label="Progress" class="lg:w-32">
-                    <progress
-                      class="flex w-2/5 self-center lg:w-full"
-                      max="100"
-                      value="38">38</progress
-                    >
-                  </td>
-                  <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400"
-                      >May 4, 2022</small
-                    >
-                  </td>
-                  <td class="before:hidden lg:w-1 whitespace-nowrap">
-                    <div
-                      class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
-                    >
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-600 dark:border-blue-500 ring-blue-300 dark:ring-blue-700 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-600 dark:border-red-500 ring-red-300 dark:ring-red-700 bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 hover:border-red-700 hover:dark:bg-red-600 hover:dark:border-red-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border-b-0 lg:w-6 before:hidden">
-                    <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
-                      <img
-                        src="https://avatars.dicebear.com/api/avataaars/Justice-O'Reilly.svg"
-                        alt="Justice O'Reilly"
-                        class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800"
-                      />
-                    </div>
-                  </td>
-                  <td data-label="Name">Justice O'Reilly</td>
-                  <td data-label="Company">Lakin-Muller</td>
-                  <td data-label="City">New Kacie</td>
-                  <td data-label="Progress" class="lg:w-32">
-                    <progress
-                      class="flex w-2/5 self-center lg:w-full"
-                      max="100"
-                      value="38">38</progress
-                    >
-                  </td>
-                  <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400"
-                      >Mar 27, 2022</small
-                    >
-                  </td>
-                  <td class="before:hidden lg:w-1 whitespace-nowrap">
-                    <div
-                      class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
-                    >
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-600 dark:border-blue-500 ring-blue-300 dark:ring-blue-700 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                      <button
-                        class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-600 dark:border-red-500 ring-red-300 dark:ring-red-700 bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 hover:border-red-700 hover:dark:bg-red-600 hover:dark:border-red-600 mr-3 last:mr-0 mb-3 p-1"
-                        type="button"
-                      >
-                        <span
-                          class="inline-flex justify-center items-center w-6 h-6"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            class="inline-block"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
-                            ></path>
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div
-              class="p-3 lg:px-6 border-t border-gray-100 dark:border-slate-800"
-            >
-              <div
-                class="flex flex-col md:flex-row items-center justify-between py-3 md:py-0"
-              >
-                <div class="flex items-center justify-start -mb-3 flex-wrap">
+              </td>
+              <td>Howell Hand</td>
+              <td>Kiehn-Green</td>
+              <td>Emelyside</td>
+              <td class="lg:w-32">
+                <progress
+                  class="flex w-2/5 self-center lg:w-full"
+                  max="100"
+                  value="70">70</progress
+                >
+              </td>
+              <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <small class="text-gray-400">Mar 3, 2022</small>
+              </td>
+              <td class="before:hidden lg:w-1 whitespace-nowrap">
+                <div
+                  class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
+                >
                   <button
-                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-gray-100 dark:border-slate-800 ring-gray-200 dark:ring-gray-500 bg-gray-200 dark:bg-slate-700 hover:bg-gray-200 hover:dark:bg-slate-700 mr-3 last:mr-0 mb-3 text-sm p-1"
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-500 ring-blue-700 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
                     type="button"
                   >
-                    <span class="px-2">1</span>
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                        ></path>
+                      </svg>
+                    </span>
                   </button>
                   <button
-                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-white dark:border-slate-900 ring-gray-200 dark:ring-gray-500 bg-white text-black dark:bg-slate-900 dark:text-white hover:bg-gray-100 hover:dark:bg-slate-800 mr-3 last:mr-0 mb-3 text-sm p-1"
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-500 ring-red-700 bg-red-500 hover:bg-red-600 hover:border-red-600 mr-3 last:mr-0 mb-3 p-1"
                     type="button"
                   >
-                    <span class="px-2">2</span>
-                  </button>
-                  <button
-                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-white dark:border-slate-900 ring-gray-200 dark:ring-gray-500 bg-white text-black dark:bg-slate-900 dark:text-white hover:bg-gray-100 hover:dark:bg-slate-800 mr-3 last:mr-0 mb-3 text-sm p-1"
-                    type="button"
-                  >
-                    <span class="px-2">3</span>
-                  </button>
-                  <button
-                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-white dark:border-slate-900 ring-gray-200 dark:ring-gray-500 bg-white text-black dark:bg-slate-900 dark:text-white hover:bg-gray-100 hover:dark:bg-slate-800 mr-3 last:mr-0 mb-3 text-sm p-1"
-                    type="button"
-                  >
-                    <span class="px-2">4</span>
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
+                        ></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
-                <small class="mt-6 md:mt-0">Page 1 of 4</small>
-              </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="border-b-0 lg:w-6 before:hidden">
+                <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
+                  <img
+                    src="https://avatars.dicebear.com/api/avataaars/Hope-Howe.svg"
+                    alt="Hope Howe"
+                    class="rounded-full block h-auto w-full max-w-full bg-gray-800"
+                  />
+                </div>
+              </td>
+              <td data-label="Name">Hope Howe</td>
+              <td data-label="Company">Nolan Inc</td>
+              <td data-label="City">Paristown</td>
+              <td data-label="Progress" class="lg:w-32">
+                <progress
+                  class="flex w-2/5 self-center lg:w-full"
+                  max="100"
+                  value="68">68</progress
+                >
+              </td>
+              <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <small class="text-gray-400">Dec 1, 2022</small>
+              </td>
+              <td class="before:hidden lg:w-1 whitespace-nowrap">
+                <div
+                  class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
+                >
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-500 ring-blue-700 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-500 ring-red-700 bg-red-500 hover:bg-red-600 hover:border-red-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="border-b-0 lg:w-6 before:hidden">
+                <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
+                  <img
+                    src="https://avatars.dicebear.com/api/avataaars/Nelson-Jerde.svg"
+                    alt="Nelson Jerde"
+                    class="rounded-full block h-auto w-full max-w-full bg-gray-800"
+                  />
+                </div>
+              </td>
+              <td data-label="Name">Nelson Jerde</td>
+              <td data-label="Company">Nitzsche LLC</td>
+              <td data-label="City">Jailynbury</td>
+              <td data-label="Progress" class="lg:w-32">
+                <progress
+                  class="flex w-2/5 self-center lg:w-full"
+                  max="100"
+                  value="49">49</progress
+                >
+              </td>
+              <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <small class="text-gray-400">May 18, 2022</small>
+              </td>
+              <td class="before:hidden lg:w-1 whitespace-nowrap">
+                <div
+                  class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
+                >
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-500 ring-blue-700 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-500 ring-red-700 bg-red-500 hover:bg-red-600 hover:border-red-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="border-b-0 lg:w-6 before:hidden">
+                <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
+                  <img
+                    src="https://avatars.dicebear.com/api/avataaars/Kim-Weimann.svg"
+                    alt="Kim Weimann"
+                    class="rounded-full block h-auto w-full max-w-full bg-gray-800"
+                  />
+                </div>
+              </td>
+              <td data-label="Name">Kim Weimann</td>
+              <td data-label="Company">Brown-Lueilwitz</td>
+              <td data-label="City">New Emie</td>
+              <td data-label="Progress" class="lg:w-32">
+                <progress
+                  class="flex w-2/5 self-center lg:w-full"
+                  max="100"
+                  value="38">38</progress
+                >
+              </td>
+              <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <small class="text-gray-400">May 4, 2022</small>
+              </td>
+              <td class="before:hidden lg:w-1 whitespace-nowrap">
+                <div
+                  class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
+                >
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-500 ring-blue-700 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-500 ring-red-700 bg-red-500 hover:bg-red-600 hover:border-red-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="border-b-0 lg:w-6 before:hidden">
+                <div class="w-24 h-24 mx-auto lg:w-6 lg:h-6">
+                  <img
+                    src="https://avatars.dicebear.com/api/avataaars/Justice-O'Reilly.svg"
+                    alt="Justice O'Reilly"
+                    class="rounded-full block h-auto w-full max-w-full bg-gray-800"
+                  />
+                </div>
+              </td>
+              <td data-label="Name">Justice O'Reilly</td>
+              <td data-label="Company">Lakin-Muller</td>
+              <td data-label="City">New Kacie</td>
+              <td data-label="Progress" class="lg:w-32">
+                <progress
+                  class="flex w-2/5 self-center lg:w-full"
+                  max="100"
+                  value="38">38</progress
+                >
+              </td>
+              <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <small class="text-gray-500">Mar 27, 2022</small>
+              </td>
+              <td class="before:hidden lg:w-1 whitespace-nowrap">
+                <div
+                  class="flex items-center justify-start lg:justify-end -mb-3 flex-nowrap"
+                >
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-blue-500 ring-blue-700 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                  <button
+                    class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-red-500 ring-red-700 bg-red-500 hover:bg-red-600 hover:border-red-600 mr-3 last:mr-0 mb-3 p-1"
+                    type="button"
+                  >
+                    <span
+                      class="inline-flex justify-center items-center w-6 h-6"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        class="inline-block"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M9,8H11V17H9V8M13,8H15V17H13V8Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="p-3 lg:px-6 border-t border-gray-800">
+          <div
+            class="flex flex-col md:flex-row items-center justify-between py-3 md:py-0"
+          >
+            <div class="flex items-center justify-start -mb-3 flex-wrap">
+              <button
+                class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-gray-800 ring-gray-500 bg-gray-700 hover:bg-gray-700 mr-3 last:mr-0 mb-3 text-sm p-1"
+                type="button"
+              >
+                <span class="px-2">1</span>
+              </button>
+              <button
+                class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-gray-900 ring-gray-500 bg-gray-900 text-white hover:bg-gray-800 mr-3 last:mr-0 mb-3 text-sm p-1"
+                type="button"
+              >
+                <span class="px-2">2</span>
+              </button>
+              <button
+                class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-gray-900 ring-gray-500 bg-gray-900 text-white hover:bg-gray-800 mr-3 last:mr-0 mb-3 text-sm p-1"
+                type="button"
+              >
+                <span class="px-2">3</span>
+              </button>
+              <button
+                class="inline-flex justify-center items-center whitespace-nowrap focus:outline-none transition-colors focus:ring duration-150 border cursor-pointer rounded border-gray-900 ring-gray-500 bg-gray-900 text-white hover:bg-gray-800 mr-3 last:mr-0 mb-3 text-sm p-1"
+                type="button"
+              >
+                <span class="px-2">4</span>
+              </button>
             </div>
+            <small class="mt-6 md:mt-0">Page 1 of 4</small>
           </div>
         </div>
-      </main>
+      </div>
     </div>
-  </body>
-</html>
+  </main>
+</Dashboard>
