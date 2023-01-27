@@ -1,0 +1,43 @@
+name: wgmngr
+networks:
+  wgmngr:
+    name: wgmngr
+    driver: bridge
+    internal: false
+    attachable: false
+volumes:
+  db:
+    name: wgmngr_db
+    external: false
+services:
+  db:
+    image: docker.io/library/mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: on-failure
+    networks:
+      - wgmngr
+    env_file:
+      - db.env
+    environment:
+      TZ: UTC
+    user: 1000:1000
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - 127.0.0.1:3306:3306
+  dbadmin:
+    image: docker.io/library/phpmyadmin:5
+    restart: on-failure
+    networks:
+      - wgmngr
+    env_file:
+      - dbadmin.env
+    environment:
+      PMA_HOST: db
+      PMA_PORT:
+      MEMORY_LIMIT: 2G
+      UPLOAD_LIMIT: 4G
+      HIDE_PHP_VERSION: true
+      APACHE_PORT: 8090
+    ports:
+      - 127.0.0.1:8090:8090
