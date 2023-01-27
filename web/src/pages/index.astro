@@ -3,7 +3,7 @@ import Dashboard from "../layouts/Dashboard.astro";
 import Index from "../components/pages/Index.svelte";
 ---
 
-<Dashboard title="Clients">
+<Dashboard title="Clients" activeMenu={"clients"}>
   <main class="lg:w-11/12 xl:w-5/6 m-auto">
     <Index client:only="svelte" />
   </main>

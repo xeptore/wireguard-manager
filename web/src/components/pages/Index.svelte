@@ -30,9 +30,9 @@
   <button
     type="button"
     on:click={openModal}
-    class="ring-wireguard-500 bg-wireguard-700 text-white hover:bg-wireguard-600 p-2 px-3 focus:outline-none transition-all duration-200 focus:ring-1 hover:ring-1 cursor-pointer rounded-lg"
+    class="ring-blue-500 bg-blue-500 text-white hover:bg-blue-600 p-2 px-3 focus:outline-none transition-all duration-200 focus:ring-1 hover:ring-1 cursor-pointer rounded-lg"
   >
-    <i class="fa-solid fa-plus align-middle" style="line-height: inherit;" />
+    <i class="fa-solid fa-plus" />
     <span class="ml-1">Create New</span>
   </button>
 </section>

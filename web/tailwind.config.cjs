@@ -1,3 +1,7 @@
+function makeFractions(cols) {
+  return Object.fromEntries(Array.from(Array(cols - 1), (_, i) => ([`${i + 1}/${cols}`, `${((i + 1) / cols) * 100}%`])));
+}
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -5,9 +9,16 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        cantarell: ["Cantarell", "sans-serif"],
+        nunito: ["Nunito", "sans-serif"],
+      },
+      width: {
+        ...makeFractions(7),
+      },
+      flexBasis: {
+        ...makeFractions(7),
       },
       colors: {
+        xiketic: '#060818',
         wireguard: {
           50: "#C02126",
           100: "#AE1E22",

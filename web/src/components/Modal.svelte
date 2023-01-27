@@ -70,14 +70,14 @@
       >
         <button
           type="button"
-          class="inline-block px-6 py-2.5 bg-wireguard-800 border border-wireguard-50 text-wireguard-50 text-xs uppercase rounded shadow-md hover:bg-wireguard-600 hover:shadow-lg focus:bg-purple-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-purple-800 active:shadow-lg transition duration-150 ease-in-out"
+          class="inline-block px-6 py-2.5 bg-transparent ring-2 ring-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white ring-inset text-sm rounded-lg shadow-md hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out"
           on:click={closeModal}
         >
           Cancel
         </button>
         <button
           type="button"
-          class="inline-block px-6 py-2.5 bg-wireguard-200 border border-wireguard-200 text-white text-xs uppercase rounded shadow-md hover:bg-wireguard-600 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
+          class="inline-block px-6 py-2.5 text-white text-sm rounded-lg shadow-md hover:shadow-lg ring-blue-500 bg-blue-600 hover:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out ml-1"
         >
           Create
         </button>

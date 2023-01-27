@@ -2,34 +2,53 @@
 import BaseLayout from "./BaseLayout.astro";
 import Wireguard from "../components/Wireguard.astro";
 
+type ActiveMenu = "clients" | "profile";
+
 export interface Props {
   title: string;
+  activeMenu: ActiveMenu;
 }
 
-const { title } = Astro.props;
+const { title, activeMenu } = Astro.props;
 ---
 
 <BaseLayout title={title} classes={["flex"]}>
-  <aside class="hidden lg:flex lg:w-1/4 xl:w-1/5 2xl:w-1/6 lg:p-2 h-screen">
-    <div class="rounded-lg flex-1 flex flex-col overflow-hidden bg-gray-900">
-      <div
-        class="flex flex-row h-14 items-center justify-between bg-gray-900 border-b-2 border-b-gray-700"
-      >
+  <aside class="hidden lg:flex w-1/7 h-screen">
+    <div
+      class="rounded-lg flex-1 flex flex-col overflow-hidden bg-transparent border border-[#0E1726]"
+    >
+      <div class="flex flex-row h-14 items-center justify-between">
         <div class="mx-auto w-2/3">
           <Wireguard />
         </div>
       </div>
-      <div class="flex-1 overflow-y-auto overflow-x-hidden">
-        <ul>
-          <li class="hover:bg-gray-700 duration-150">
-            <a class="flex cursor-pointer py-3" href="/">
-              <span
-                class="inline-flex justify-center items-center w-16 h-6 flex-none font-bold"
-              >
-                <i class="fa-solid fa-users"></i>
-              </span>
-              <span class="grow text-ellipsis line-clamp-1 pr-12 font-medium">
+      <div class="flex-1 overflow-y-auto overflow-x-hidden px-4">
+        <ul class="text-[#506690]">
+          <li class="w-11/12 mx-auto">
+            <a
+              class:list={[
+                "cursor-pointer py-2 pl-1 inline-block w-full rounded-md mb-1 hover:bg-[#3b3f5c] hover:text-[#e0e6ed] duration-75",
+                { "bg-[#374856] text-[#e0e6ed]": activeMenu === "clients" },
+              ]}
+              href="/"
+            >
+              <i class="fa-solid fa-users mx-3"></i>
+              <span class="grow text-ellipsis line-clamp-1 font-medium">
                 Clients
+              </span>
+            </a>
+          </li>
+          <li class="w-11/12 mx-auto">
+            <a
+              class:list={[
+                "cursor-pointer py-2 pl-1 inline-block w-full rounded-md mb-1 hover:bg-[#3b3f5c] hover:text-[#e0e6ed] duration-75",
+                { "bg-[#374856] text-[#e0e6ed]": activeMenu === "profile" },
+              ]}
+              href="/"
+            >
+              <i class="fa-solid fa-users mx-3"></i>
+              <span class="grow text-ellipsis line-clamp-1 font-medium">
+                Profile
               </span>
             </a>
           </li>
@@ -40,22 +59,18 @@ const { title } = Astro.props;
           <button
             role="button"
             type="button"
-            class="items-center rounded-br-lg rounded-bl-lg ring-inset w-full cursor-pointer py-3 hover:transition-all duration-200 hover:ring-1 ring-wireguard-500 bg-wireguard-700 hover:bg-wireguard-600"
+            class="items-center rounded-br-lg rounded-bl-lg ring-inset w-full cursor-pointer py-3 hover:transition-all duration-200 hover:ring-1 ring-[#1a2842] bg-[#1b2e4b] hover:bg-[#0e1726] hover:text-[#61b6cd]"
           >
-            <span class="inline-flex justify-center items-center h-6">
-              <i class="fa-solid fa-right-from-bracket mr-2"></i>
-            </span>
+            <i class="fa-solid fa-right-from-bracket mr-2"></i>
             <span class="text-ellipsis">Logout</span>
           </button>
         </li>
       </ul>
     </div>
   </aside>
-  <div class="lg:w-3/4 xl:w-4/5 2xl:w-5/6">
+  <div class="lg:w-6/7">
     <nav class="h-16 pr-2 mb-4 z-30 transition-position">
-      <div
-        class="h-full justify-end flex lg:items-stretch border-b-gray-700 border-b-2"
-      >
+      <div class="h-full justify-end flex lg:items-stretch">
         <div
           class="hidden overflow-y-auto lg:overflow-visible lg:w-auto lg:flex lg:static"
         >
