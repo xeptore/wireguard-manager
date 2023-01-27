@@ -2,71 +2,73 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
-	"log"
-	"net/http"
-	"os/signal"
-	"syscall"
+	"os"
 	"time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
+	"github.com/pressly/goose/v3"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	"github.com/xeptore/wireguard-manager/wgmngr/migration"
+	_ "github.com/xeptore/wireguard-manager/wgmngr/migration/seeds"
 )
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+	ctx := context.Background()
 
-	router := gin.Default()
-	router.Use(cors.Default())
-	store := cookie.NewStore([]byte(`|k'%#C85Y]L>tDuI=MaoqAHk+Gu_P|>(JuJ~=2XGNRBrr=/M##+_j6Ea'|HJ?&k2`), []byte(`T$W4k{_ep26|{,.Za+AK{KbbY5:f<dWR`))
+	zerolog.TimeFieldFormat = time.RFC3339
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 
-	router.Use(sessions.Sessions("mysession", store))
-
-	router.GET("/incr", func(c *gin.Context) {
-		session := sessions.Default(c)
-		var count int
-		v := session.Get("sss")
-		fmt.Printf("%+#v\n", session.ID())
-		if v == nil {
-			count = 0
-		} else {
-			count = v.(int)
-			count++
+	if err := godotenv.Load(); nil != err {
+		if !errors.Is(err, os.ErrNotExist) {
+			log.Panic().Err(err).Msg("unexpected error while loading .env file")
 		}
-		session.Set("sss", count)
-		session.Save()
-		c.JSON(200, gin.H{"count": count})
-	})
-
-	srv := &http.Server{
-		Addr:    ":8080",
-		Handler: router,
+		log.Warn().Msg(".env file not found")
 	}
 
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
-
-	// Listen for the interrupt signal.
-	<-ctx.Done()
-
-	// Restore default behavior on the interrupt signal and notify user of shutdown.
-	stop()
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
-
-	// The context is used to inform the server it has 5 seconds to finish
-	// the request it is currently handling
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+	tz, isTzSet := os.LookupEnv("TZ")
+	if !isTzSet || tz != "UTC" {
+		log.Fatal().Msg("TZ environment variable must set to UTC")
 	}
 
-	log.Println("Server exiting")
+	// https://github.com/go-sql-driver/mysql/#parameters
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s)/%s?tls=false&loc=UTC&parseTime=true",
+		os.Getenv("DB_USERNAME"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_ADDRESS"),
+		os.Getenv("DB_DATABASE"),
+	)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to open database connection")
+	}
+	defer db.Close()
 
+	db.SetConnMaxLifetime(time.Minute * 3)
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(10)
+
+	if err := db.PingContext(ctx); nil != err {
+		log.Fatal().Err(err).Msg("failed to ping the database")
+	}
+
+	goose.SetLogger(goose.NopLogger())
+	goose.SetTableName("migrations")
+	goose.SetBaseFS(migration.FS)
+
+	if err := goose.SetDialect("mysql"); nil != err {
+		log.Fatal().Err(err).Msg("failed to set goose sql dialect to mysql")
+	}
+
+	log.Trace().Msg("executing database migrations...")
+	if err := goose.Up(db, "scripts"); nil != err {
+		log.Fatal().Err(err).Msg("failed to run migration scripts using goose")
+	}
+	log.Info().Msg("database migrations executed")
 }
