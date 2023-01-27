@@ -26,11 +26,6 @@ jobs:
           labels: |
             maintainer=${{ github.repository_owner }}
             org.opencontainers.image.authors=${{ github.repository_owner }}
-            org.opencontainers.image.version=${{ github.ref_name }}
-            org.opencontainers.image.title=wgmngr
-            org.opencontainers.image.url=${{ github.repositoryUrl }}
-            org.opencontainers.image.created=${{ steps.date.outputs.date }}
-            org.opencontainers.image.revision=${{ github.sha }}
           flavor: |
             latest=true
       - name: Setup Docker Buildx
