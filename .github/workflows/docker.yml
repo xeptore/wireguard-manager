@@ -50,8 +50,8 @@ jobs:
         with:
           push: true
           pull: true
-          context: .
-          file: Dockerfile
+          context: wgmngr
+          file: wgmngr/Dockerfile
           no-cache: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
