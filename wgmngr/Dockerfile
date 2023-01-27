@@ -24,4 +24,6 @@ FROM gcr.io/distroless/base-debian11:nonroot
 
 COPY --from=build --chown=nonroot:nonroot /home/nonroot/bin/wgmngr wgmngr
 
+ENV TZ=UTC
+
 ENTRYPOINT [ "./wgmngr" ]
