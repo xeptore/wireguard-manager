@@ -12,9 +12,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Get Current Date Time
-        id: date
-        run: echo "::set-output name=date::$(date -u --iso-8601=seconds)"
       - name: Docker Meta
         id: meta
         uses: docker/metadata-action@v3
