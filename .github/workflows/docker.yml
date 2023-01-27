@@ -22,7 +22,7 @@ jobs:
           images: |
             ghcr.io/${{ github.repository }}
           tags: |
-            type=edge,enable=${{ github.event_name == 'push' && github.ref_protected && github.ref_type == 'branch' && github.ref_name == 'main' && github.ref == 'refs/heads/main' }}
+            type=edge
           labels: |
             maintainer=xeptore
             org.opencontainers.image.authors=xeptore
@@ -33,7 +33,7 @@ jobs:
             org.opencontainers.image.created=${{ steps.date.outputs.date }}
             org.opencontainers.image.revision=${{ github.sha }}
           flavor: |
-            latest=${{ github.event_name == 'push' && github.ref_protected && github.ref_type == 'branch' && github.ref_name == 'main' && github.ref == 'refs/heads/main' }}
+            latest=true
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
       - name: Setup Docker Buildx
