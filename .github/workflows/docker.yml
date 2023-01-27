@@ -24,11 +24,11 @@ jobs:
           tags: |
             type=edge
           labels: |
-            maintainer=xeptore
-            org.opencontainers.image.authors=xeptore
+            maintainer=${{ github.repository_owner }}
+            org.opencontainers.image.authors=${{ github.repository_owner }}
             org.opencontainers.image.version=${{ github.ref_name }}
             org.opencontainers.image.title=wgmngr
-            org.opencontainers.image.url=githun
+            org.opencontainers.image.url=${{ github.repositoryUrl }}
             maintainer='xeptore < hello [ at ] xeptore [ dot ] me >'
             org.opencontainers.image.created=${{ steps.date.outputs.date }}
             org.opencontainers.image.revision=${{ github.sha }}
