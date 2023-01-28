@@ -30,7 +30,11 @@ func Hash(password string) ([]byte, error) {
 
 	hash := argon2.IDKey([]byte(password), salt, p.iterations, p.memory, p.parallelism, p.keyLength)
 
-	return hash, nil
+	out := make([]byte, p.saltLength+p.keyLength)
+	copy(out[:len(salt)], salt)
+	copy(out[len(salt):], hash)
+
+	return out, nil
 }
 
 func generateRandomBytes(n uint32) ([]byte, error) {
