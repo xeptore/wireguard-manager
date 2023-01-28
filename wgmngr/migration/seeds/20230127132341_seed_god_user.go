@@ -12,8 +12,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	m "github.com/xeptore/wireguard-manager/wgmngr/gen/db/wgmngr/model"
-	t "github.com/xeptore/wireguard-manager/wgmngr/gen/db/wgmngr/table"
+	m "github.com/xeptore/wireguard-manager/wgmngr/db/gen/v1/wgmngr/model"
+	t "github.com/xeptore/wireguard-manager/wgmngr/db/gen/v1/wgmngr/table"
 	"github.com/xeptore/wireguard-manager/wgmngr/password"
 )
 
