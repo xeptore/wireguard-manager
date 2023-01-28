@@ -5,15 +5,18 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"github.com/julienschmidt/httprouter"
 	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/xeptore/wireguard-manager/wgmngr/api"
 	"github.com/xeptore/wireguard-manager/wgmngr/migration"
 	_ "github.com/xeptore/wireguard-manager/wgmngr/migration/seeds"
 )
@@ -71,4 +74,38 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to run migration scripts using goose")
 	}
 	log.Info().Msg("database migrations executed")
+
+	handler := api.NewHandler(nil, db)
+	router := httprouter.New()
+	router.POST("/auth/login", login(&handler))
+
+	addr := ":8080"
+	log.Info().Str("addr", addr).Msg("starting server")
+	if err := http.ListenAndServe(addr, router); nil != err {
+		log.Fatal().Err(err).Msg("server stopped")
+	}
+}
+
+func login(h *api.Handler) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		token, err := h.Login(r.Context(), "", "")
+		if errors.Is(err, api.ErrInvalidCreds) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if errors.Is(err, api.ErrUserNotFound) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if errors.Is(err, api.ErrInternal) {
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(token))
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(token))
+	}
 }

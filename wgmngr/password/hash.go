@@ -2,6 +2,8 @@ package password
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
+	"errors"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -22,19 +24,30 @@ var p = &params{
 	keyLength:   7000,
 }
 
-func Hash(password string) ([]byte, error) {
+func Hash(password []byte) ([]byte, error) {
 	salt, err := generateRandomBytes(p.saltLength)
 	if err != nil {
 		return nil, err
 	}
 
-	hash := argon2.IDKey([]byte(password), salt, p.iterations, p.memory, p.parallelism, p.keyLength)
+	hash := argon2.IDKey(password, salt, p.iterations, p.memory, p.parallelism, p.keyLength)
 
 	out := make([]byte, p.saltLength+p.keyLength)
-	copy(out[:len(salt)], salt)
-	copy(out[len(salt):], hash)
+	copy(out[:p.saltLength], salt)
+	copy(out[p.saltLength:], hash)
 
 	return out, nil
+}
+
+func Compare(hashedPasswd, enteredPasswd []byte) (bool, error) {
+	if len(hashedPasswd) != int(p.saltLength)+int(p.keyLength) {
+		return false, errors.New("invalid hashed password")
+	}
+
+	salt := hashedPasswd[:p.saltLength]
+	hash := argon2.IDKey(enteredPasswd, salt, p.iterations, p.memory, p.parallelism, p.keyLength)
+
+	return subtle.ConstantTimeCompare(hash, hashedPasswd) == 1, nil
 }
 
 func generateRandomBytes(n uint32) ([]byte, error) {

@@ -44,7 +44,7 @@ func upSeedResellers(tx *sql.Tx) error {
 		return err
 	}
 
-	password, err := password.Hash("password")
+	password, err := password.Hash([]byte("password"))
 	if nil != err {
 		return err
 	}

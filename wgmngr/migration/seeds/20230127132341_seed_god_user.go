@@ -30,7 +30,7 @@ func upSeedGodUser(tx *sql.Tx) error {
 		return errors.New("GO_PASSWORD environment variable is not strong enough")
 	}
 
-	hash, err := password.Hash(godPassword)
+	hash, err := password.Hash([]byte(godPassword))
 	if nil != err {
 		return err
 	}
