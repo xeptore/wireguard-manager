@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	ErrInternal     error = errors.New("internal error")
 	ErrUserNotFound error = errors.New("user not found")
 	ErrInvalidCreds error = errors.New("username or password is invalid")
 )
@@ -47,13 +46,13 @@ func (s *Handler) Login(ctx context.Context, username, passwd string) (string, e
 		}
 
 		log.Error().Err(err).Msg("failed to retrieve user stored password")
-		return "", ErrInternal
+		return "", err
 	}
 
 	matches, err := password.Compare(u.password, []byte(passwd))
 	if nil != err {
 		log.Error().Err(err).Msg("failed to compare entered password and stored password")
-		return "", ErrInternal
+		return "", err
 	}
 	if !matches {
 		return "", ErrInvalidCreds
@@ -66,7 +65,7 @@ func (s *Handler) Login(ctx context.Context, username, passwd string) (string, e
 	})
 	if nil != err {
 		log.Error().Err(err).Msg("failed to generate token")
-		return "", ErrInternal
+		return "", err
 	}
 	return token, nil
 }
