@@ -17,6 +17,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/xeptore/wireguard-manager/wgmngr/api"
+	"github.com/xeptore/wireguard-manager/wgmngr/env"
 	"github.com/xeptore/wireguard-manager/wgmngr/migration"
 	_ "github.com/xeptore/wireguard-manager/wgmngr/migration/seeds"
 )
@@ -34,18 +35,18 @@ func main() {
 		log.Warn().Msg(".env file not found")
 	}
 
-	tz, isTzSet := os.LookupEnv("TZ")
-	if !isTzSet || tz != "UTC" {
-		log.Fatal().Msg("TZ environment variable must set to UTC")
+	tz := env.MustGet("TZ")
+	if tz != "UTC" {
+		log.Fatal().Msg("TZ environment variable must be set to UTC")
 	}
 
 	// https://github.com/go-sql-driver/mysql/#parameters
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s)/%s?tls=false&loc=UTC&parseTime=true",
-		os.Getenv("DB_USERNAME"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_ADDRESS"),
-		os.Getenv("DB_DATABASE"),
+		env.MustGet("DB_USERNAME"),
+		env.MustGet("DB_PASSWORD"),
+		env.MustGet("DB_ADDRESS"),
+		env.MustGet("DB_DATABASE"),
 	)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -75,7 +76,7 @@ func main() {
 	}
 	log.Info().Msg("database migrations executed")
 
-	handler := api.NewHandler(nil, db)
+	handler := api.NewHandler([]byte(env.MustGet("AUTH_TOKEN_SECRET")), db)
 	router := httprouter.New()
 	router.POST("/auth/login", login(&handler))
 

@@ -3,7 +3,6 @@ package migrations
 import (
 	"database/sql"
 	"errors"
-	"os"
 	"time"
 
 	"github.com/go-jet/jet/v2/mysql"
@@ -14,6 +13,7 @@ import (
 
 	m "github.com/xeptore/wireguard-manager/wgmngr/db/gen/v1/wgmngr/model"
 	t "github.com/xeptore/wireguard-manager/wgmngr/db/gen/v1/wgmngr/table"
+	"github.com/xeptore/wireguard-manager/wgmngr/env"
 	"github.com/xeptore/wireguard-manager/wgmngr/password"
 )
 
@@ -22,10 +22,7 @@ func init() {
 }
 
 func upSeedGodUser(tx *sql.Tx) error {
-	godPassword, exists := os.LookupEnv("GOD_PASSWORD")
-	if !exists {
-		return errors.New("GO_PASSWORD environment variable is not set")
-	}
+	godPassword := env.MustGet("GOD_PASSWORD")
 	if !password.StrongPasswordRegExp.MatchString(godPassword) {
 		return errors.New("GO_PASSWORD environment variable is not strong enough")
 	}
