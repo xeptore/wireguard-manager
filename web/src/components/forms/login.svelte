@@ -1,19 +1,8 @@
 <script lang="ts">
   let error: string | null = null;
-
-  function handleSubmit(e: Event) {
-    const formData = new FormData(e.target as HTMLFormElement);
-    const values = Object.fromEntries(formData.entries());
-    console.log(JSON.stringify(values, null, 2));
-
-    error = "invalid message";
-    setTimeout(() => {
-      location.assign("/");
-    }, 3000);
-  }
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form action="/auth/login" method="post">
   <div class="mb-6 last:mb-0">
     <label class="block font-bold mb-2" for="username">Username</label>
     <input

@@ -59,7 +59,11 @@ func (s *Handler) Login(ctx context.Context, username, passwd string) (string, e
 		return "", ErrInvalidCreds
 	}
 
-	token, err := generateToken(s.tokenSecret, u.id, username, u.role)
+	token, err := generateToken(s.tokenSecret, TokenClaims{
+		UserID:   u.id,
+		Role:     u.role,
+		Username: username,
+	})
 	if nil != err {
 		log.Error().Err(err).Msg("failed to generate token")
 		return "", ErrInternal

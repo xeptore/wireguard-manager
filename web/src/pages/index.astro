@@ -1,6 +1,23 @@
 ---
-import Dashboard from "../layouts/Dashboard.astro";
-import Index from "../components/pages/Index.svelte";
+import httpStatusCodes from 'http-status-codes';
+import Dashboard from "@/layouts/Dashboard.astro";
+import Index from "@/components/pages/Index.svelte";
+import { path } from '@/api';
+
+const authCookie = Astro.cookies.get("auth").value;
+if (authCookie === undefined) {
+  return Astro.redirect("/login");
+}
+
+const response = await fetch(path('auth/check'), {
+  headers: {
+    cookie: `auth=${authCookie}`,
+  }
+});
+
+if (response.status !== httpStatusCodes.OK) {
+  return Astro.redirect("/login");
+}
 ---
 
 <Dashboard title="Clients" activeMenu={"clients"}>

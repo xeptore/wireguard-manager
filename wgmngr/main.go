@@ -11,9 +11,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"github.com/julienschmidt/httprouter"
 	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -79,12 +80,16 @@ func main() {
 	log.Info().Msg("database migrations executed")
 
 	handler := api.NewHandler([]byte(env.MustGet("AUTH_TOKEN_SECRET")), db)
-	router := httprouter.New()
-	router.POST("/auth/login", login(&handler))
+
+	gin.SetMode(gin.ReleaseMode)
+	engine := gin.Default()
+	engine.Use(cors.Default())
+	engine.POST("auth/login", login(&handler))
+	engine.GET("auth/check", isAuthenticated(&handler))
 
 	addr := ":8080"
-	log.Info().Str("addr", addr).Msg("starting server")
-	if err := http.ListenAndServe(addr, router); nil != err {
+	log.Info().Str("addr", addr).Msg("starting server...")
+	if err := engine.Run(addr); nil != err {
 		log.Fatal().Err(err).Msg("server stopped")
 	}
 }
@@ -119,7 +124,7 @@ func parseJsonLimitedReader(r io.ReadCloser, w http.ResponseWriter, limit int64,
 	return nil
 }
 
-func login(h *api.Handler) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func login(h *api.Handler) func(c *gin.Context) {
 	const reqBodyLimit = len(`{"username":"","password":""}`) + 128 + 64
 
 	type Form struct {
@@ -127,32 +132,60 @@ func login(h *api.Handler) func(w http.ResponseWriter, r *http.Request, p httpro
 		Password string `json:"password"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(c *gin.Context) {
 		defer func() {
-			if err := r.Body.Close(); nil != err {
+			if err := c.Request.Body.Close(); nil != err {
 				log.Error().Err(err).Msg("failed to close request body")
 			}
 		}()
 
 		var f Form
-		if err := parseJsonLimitedReader(r.Body, w, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
+		if err := parseJsonLimitedReader(c.Request.Body, c.Writer, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
 			return
 		}
 
-		token, err := h.Login(r.Context(), f.Username, f.Password)
+		token, err := h.Login(c.Request.Context(), f.Username, f.Password)
 		if errors.Is(err, api.ErrInvalidCreds) || errors.Is(err, api.ErrUserNotFound) {
 			time.Sleep(1500 * time.Millisecond)
-			w.WriteHeader(http.StatusUnauthorized)
+			c.Writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		if errors.Is(err, api.ErrInternal) {
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(token))
+			c.Writer.WriteHeader(http.StatusCreated)
+			c.Writer.Write([]byte(token))
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(token))
+		c.SetCookie("auth", token, int(time.Duration(time.Minute*15).Seconds()), "/", "localhost", false, true)
+		c.Writer.WriteHeader(http.StatusCreated)
+
+	}
+}
+
+func isAuthenticated(h *api.Handler) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		if err := c.Request.Body.Close(); nil != err {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			log.Error().Err(err).Msg("failed to close request body")
+		}
+
+		authCookie, err := c.Cookie("auth")
+		if nil != err {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		ok, err := h.IsAuthenticated(c.Request.Context(), authCookie)
+		if nil != err {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if !ok {
+			c.Writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusOK)
 	}
 }

@@ -16,6 +16,7 @@
     "@astrojs/svelte": "^2.0.0",
     "@astrojs/tailwind": "^3.0.0",
     "astro": "^2.0.2",
+    "http-status-codes": "^2.2.0",
     "svelte": "^3.55.1",
     "tailwindcss": "^3.2.4"
   },

@@ -8,6 +8,7 @@ specifiers:
   astro: ^2.0.2
   autoprefixer: ^10.4.13
   cssnano: ^5.1.14
+  http-status-codes: ^2.2.0
   postcss: ^8.4.21
   svelte: ^3.55.1
   tailwindcss: ^3.2.4
@@ -19,6 +20,7 @@ dependencies:
   '@astrojs/svelte': 2.0.0_cqcw23fxxwjerzxzncaq3vrsrm
   '@astrojs/tailwind': 3.0.0_uhsc6pehih5huiqhsy5i7sy5um
   astro: 2.0.2_@types+node@18.11.18
+  http-status-codes: 2.2.0
   svelte: 3.55.1
   tailwindcss: 3.2.4_postcss@8.4.21
 
@@ -1788,6 +1790,10 @@ packages:
       setprototypeof: 1.2.0
       statuses: 2.0.1
       toidentifier: 1.0.1
+    dev: false
+
+  /http-status-codes/2.2.0:
+    resolution: {integrity: sha512-feERVo9iWxvnejp3SEfm/+oNG517npqL2/PIA8ORjyOZjGC7TwCRQsZylciLS64i6pJ0wRYz3rkXLRwbtFa8Ng==}
     dev: false
 
   /human-signals/3.0.1:
