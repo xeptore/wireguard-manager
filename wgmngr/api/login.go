@@ -4,74 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"strings"
-	"time"
 
 	"github.com/go-jet/jet/v2/mysql"
 	"github.com/go-jet/jet/v2/qrm"
-	"github.com/gofrs/uuid"
-	"github.com/lestrrat-go/jwx/jwa"
-	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/rs/zerolog/log"
 
 	m "github.com/xeptore/wireguard-manager/wgmngr/db/gen/latest/wgmngr/model"
 	t "github.com/xeptore/wireguard-manager/wgmngr/db/gen/latest/wgmngr/table"
 	"github.com/xeptore/wireguard-manager/wgmngr/password"
 )
-
-func generateToken(secret []byte, username string) (string, error) {
-	tokenID, err := uuid.NewV4()
-	if nil != err {
-		return "", fmt.Errorf("unable to generate token id: %w", err)
-	}
-
-	token := jwt.New()
-	if err := token.Set(jwt.IssuerKey, "https://github.com/xeptore/wireguard-manager"); nil != err {
-		return "", fmt.Errorf("unable to set auth token issuer key: %w", err)
-	}
-
-	if err := token.Set(jwt.AudienceKey, []string{"users"}); nil != err {
-		return "", fmt.Errorf("unable to set auth token audience key: %w", err)
-	}
-
-	exp := time.Now()
-	if err := token.Set(jwt.ExpirationKey, exp.Add(time.Hour*24*7)); nil != err {
-
-		return "", fmt.Errorf("unable to set auth token expiration key: %w", err)
-	}
-
-	if err := token.Set(jwt.IssuedAtKey, time.Now()); nil != err {
-		return "", fmt.Errorf("unable to set auth token issued_at key: %w", err)
-	}
-
-	if err := token.Set(jwt.JwtIDKey, tokenID.String()); nil != err {
-		return "", fmt.Errorf("unable to set auth token jwt_id key: %w", err)
-	}
-
-	nbf := time.Now()
-	if err := token.Set(jwt.NotBeforeKey, nbf); nil != err {
-		return "", fmt.Errorf("unable to set auth token not_before key: %w", err)
-	}
-
-	if err := token.Set(jwt.SubjectKey, username); nil != err {
-		return "", fmt.Errorf("unable to set auth token subject key: %w", err)
-	}
-
-	opts := []jwt.SignOption{}
-	serialized, err := jwt.Sign(token, jwa.HS512, []byte(secret), opts...)
-	if nil != err {
-		return "", fmt.Errorf("unable to sign auth token: %w", err)
-	}
-
-	var b strings.Builder
-	b.Grow(len(serialized))
-	if _, err := b.Write(serialized); nil != err {
-		return "", err
-	}
-
-	return b.String(), nil
-}
 
 var (
 	ErrInternal     error = errors.New("internal error")
