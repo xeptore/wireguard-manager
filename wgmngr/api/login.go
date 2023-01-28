@@ -15,8 +15,8 @@ import (
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/rs/zerolog/log"
 
-	m "github.com/xeptore/wireguard-manager/wgmngr/db/gen/v1/wgmngr/model"
-	t "github.com/xeptore/wireguard-manager/wgmngr/db/gen/v1/wgmngr/table"
+	m "github.com/xeptore/wireguard-manager/wgmngr/db/gen/latest/wgmngr/model"
+	t "github.com/xeptore/wireguard-manager/wgmngr/db/gen/latest/wgmngr/table"
 	"github.com/xeptore/wireguard-manager/wgmngr/password"
 )
 
