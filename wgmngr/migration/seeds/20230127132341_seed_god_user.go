@@ -34,6 +34,7 @@ func upSeedGodUser(tx *sql.Tx) error {
 	if nil != err {
 		return err
 	}
+
 	id, err := gonanoid.New(64)
 	if nil != err {
 		return err
