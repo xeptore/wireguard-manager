@@ -47,7 +47,7 @@ func Compare(hashedPasswd, enteredPasswd []byte) (bool, error) {
 	salt := hashedPasswd[:p.saltLength]
 	hash := argon2.IDKey(enteredPasswd, salt, p.iterations, p.memory, p.parallelism, p.keyLength)
 
-	return subtle.ConstantTimeCompare(hash, hashedPasswd) == 1, nil
+	return subtle.ConstantTimeCompare(hash, hashedPasswd[p.saltLength:]) == 1, nil
 }
 
 func generateRandomBytes(n uint32) ([]byte, error) {

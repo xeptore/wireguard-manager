@@ -81,7 +81,7 @@ var (
 
 func getUsernamePassword(ctx context.Context, db *sql.DB, username string) ([]byte, error) {
 	var u m.Users
-	err := t.Users.SELECT(t.Users.Password).WHERE(t.Users.Name.EQ(mysql.String(username))).LIMIT(1).QueryContext(ctx, db, &u)
+	err := t.Users.SELECT(t.Users.Password).WHERE(t.Users.Username.EQ(mysql.String(username))).LIMIT(1).QueryContext(ctx, db, &u)
 	if nil != err {
 		if errors.Is(err, qrm.ErrNoRows) {
 			return nil, ErrUserNotFound
@@ -94,6 +94,10 @@ func getUsernamePassword(ctx context.Context, db *sql.DB, username string) ([]by
 func (s *Handler) Login(ctx context.Context, username, passwd string) (string, error) {
 	storedPasswd, err := getUsernamePassword(ctx, s.db, username)
 	if nil != err {
+		if errors.Is(err, ErrUserNotFound) {
+			return "", err
+		}
+
 		log.Error().Err(err).Msg("failed to retrieve user stored password")
 		return "", ErrInternal
 	}

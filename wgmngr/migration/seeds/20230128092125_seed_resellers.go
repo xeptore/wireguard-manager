@@ -50,17 +50,17 @@ func upSeedResellers(tx *sql.Tx) error {
 	}
 
 	for i := 0; i < len(initialResellers); i++ {
-		v := &initialResellers[i]
-		v = &m.Users{
+		u := m.Users{
 			ID:        id,
-			Name:      v.Name,
-			Username:  v.Username,
+			Name:      initialResellers[i].Name,
+			Username:  initialResellers[i].Username,
 			Password:  password,
 			Role:      m.UsersRole_Reseller,
 			CreatorID: godUser.ID,
 			CreatedAt: time.Now(),
 		}
-		log.Debug().Dict("reseller", zerolog.Dict().Time("created-at", v.CreatedAt).Str("username", v.Username).Str("name", v.Name).Str("id", v.ID)).Msg("seeding reseller user")
+		initialResellers[i] = u
+		log.Debug().Dict("reseller", zerolog.Dict().Time("created-at", u.CreatedAt).Str("username", u.Username).Str("name", u.Name).Str("id", u.ID)).Msg("seeding reseller user")
 	}
 
 	res, err := t.Users.INSERT(t.Users.AllColumns).MODELS(initialResellers).Exec(tx)

@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -87,10 +89,59 @@ func main() {
 	}
 }
 
+func isMore(r io.Reader) bool {
+	var buf [1]byte
+	n, err := r.Read(buf[:])
+	return !(errors.Is(err, io.EOF) && n == 0)
+}
+
+type ErrorTodo struct{}
+
+func (ErrorTodo) Error() string {
+	return ""
+}
+
+var ErrTODO = ErrorTodo{}
+
+func parseJsonLimitedReader(r io.ReadCloser, w http.ResponseWriter, limit int64, v any) error {
+	decoder := json.NewDecoder(io.LimitReader(r, limit))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&v); nil != err {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return ErrTODO
+	}
+
+	if isMore(r) {
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
+		return ErrTODO
+	}
+
+	return nil
+}
+
 func login(h *api.Handler) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	const reqBodyLimit = len(`{"username":"","password":""}`) + 128 + 64
+
+	type Form struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		token, err := h.Login(r.Context(), "", "")
+		defer func() {
+			if err := r.Body.Close(); nil != err {
+				log.Error().Err(err).Msg("failed to close request body")
+			}
+		}()
+
+		var f Form
+		if err := parseJsonLimitedReader(r.Body, w, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
+			return
+		}
+
+		token, err := h.Login(r.Context(), f.Username, f.Password)
 		if errors.Is(err, api.ErrInvalidCreds) || errors.Is(err, api.ErrUserNotFound) {
+			time.Sleep(1500 * time.Millisecond)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
