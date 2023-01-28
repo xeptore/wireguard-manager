@@ -89,12 +89,7 @@ func main() {
 func login(h *api.Handler) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		token, err := h.Login(r.Context(), "", "")
-		if errors.Is(err, api.ErrInvalidCreds) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		if errors.Is(err, api.ErrUserNotFound) {
+		if errors.Is(err, api.ErrInvalidCreds) || errors.Is(err, api.ErrUserNotFound) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
