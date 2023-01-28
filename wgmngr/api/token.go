@@ -10,42 +10,25 @@ import (
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
-func generateToken(secret []byte, username string) (string, error) {
+func generateToken(secret []byte, userID, username, role string) (string, error) {
 	tokenID, err := uuid.NewV4()
 	if nil != err {
 		return "", fmt.Errorf("unable to generate token id: %w", err)
 	}
 
-	token := jwt.New()
-	if err := token.Set(jwt.IssuerKey, "https://github.com/xeptore/wireguard-manager"); nil != err {
-		return "", fmt.Errorf("unable to set auth token issuer key: %w", err)
-	}
-
-	if err := token.Set(jwt.AudienceKey, []string{"users"}); nil != err {
-		return "", fmt.Errorf("unable to set auth token audience key: %w", err)
-	}
-
-	exp := time.Now()
-	if err := token.Set(jwt.ExpirationKey, exp.Add(time.Minute*15)); nil != err {
-
-		return "", fmt.Errorf("unable to set auth token expiration key: %w", err)
-	}
-
-	if err := token.Set(jwt.IssuedAtKey, time.Now()); nil != err {
-		return "", fmt.Errorf("unable to set auth token issued_at key: %w", err)
-	}
-
-	if err := token.Set(jwt.JwtIDKey, tokenID.String()); nil != err {
-		return "", fmt.Errorf("unable to set auth token jwt_id key: %w", err)
-	}
-
-	nbf := time.Now()
-	if err := token.Set(jwt.NotBeforeKey, nbf); nil != err {
-		return "", fmt.Errorf("unable to set auth token not_before key: %w", err)
-	}
-
-	if err := token.Set(jwt.SubjectKey, username); nil != err {
-		return "", fmt.Errorf("unable to set auth token subject key: %w", err)
+	token, err := jwt.NewBuilder().
+		Issuer("https://github.com/xeptore/wireguard-manager").
+		IssuedAt(time.Now()).
+		Audience([]string{"users"}).
+		Expiration(time.Now().Add(time.Minute*15)).
+		JwtID(tokenID.String()).
+		NotBefore(time.Now()).
+		Subject(userID).
+		Claim("username", username).
+		Claim("role", role).
+		Build()
+	if nil != err {
+		return "", fmt.Errorf("failed to build token: %w", err)
 	}
 
 	opts := []jwt.SignOption{}

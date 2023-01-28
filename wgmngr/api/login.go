@@ -20,20 +20,27 @@ var (
 	ErrInvalidCreds error = errors.New("username or password is invalid")
 )
 
-func getUsernamePassword(ctx context.Context, db *sql.DB, username string) ([]byte, error) {
+type userLoginCreds struct {
+	id       string
+	role     string
+	password []byte
+}
+
+func getUserLoginInfo(ctx context.Context, db *sql.DB, username string) (*userLoginCreds, error) {
 	var u m.Users
-	err := t.Users.SELECT(t.Users.Password).WHERE(t.Users.Username.EQ(mysql.String(username))).LIMIT(1).QueryContext(ctx, db, &u)
+	err := t.Users.SELECT(t.Users.ID, t.Users.Role, t.Users.Password).WHERE(t.Users.Username.EQ(mysql.String(username))).LIMIT(1).QueryContext(ctx, db, &u)
 	if nil != err {
 		if errors.Is(err, qrm.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}
 		return nil, err
 	}
-	return u.Password, nil
+
+	return &userLoginCreds{u.ID, u.Role.String(), u.Password}, nil
 }
 
 func (s *Handler) Login(ctx context.Context, username, passwd string) (string, error) {
-	storedPasswd, err := getUsernamePassword(ctx, s.db, username)
+	u, err := getUserLoginInfo(ctx, s.db, username)
 	if nil != err {
 		if errors.Is(err, ErrUserNotFound) {
 			return "", err
@@ -43,7 +50,7 @@ func (s *Handler) Login(ctx context.Context, username, passwd string) (string, e
 		return "", ErrInternal
 	}
 
-	matches, err := password.Compare(storedPasswd, []byte(passwd))
+	matches, err := password.Compare(u.password, []byte(passwd))
 	if nil != err {
 		log.Error().Err(err).Msg("failed to compare entered password and stored password")
 		return "", ErrInternal
@@ -52,7 +59,7 @@ func (s *Handler) Login(ctx context.Context, username, passwd string) (string, e
 		return "", ErrInvalidCreds
 	}
 
-	token, err := generateToken(s.tokenSecret, username)
+	token, err := generateToken(s.tokenSecret, u.id, username, u.role)
 	if nil != err {
 		log.Error().Err(err).Msg("failed to generate token")
 		return "", ErrInternal
