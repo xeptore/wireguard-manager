@@ -51,9 +51,9 @@ func generateToken(secret []byte, claims TokenClaims) (string, error) {
 	return b.String(), nil
 }
 
-func parseVerifyToken(secret []byte, token string) (*TokenClaims, error) {
+func (h *Handler) ParseVerifyToken(token string) (*TokenClaims, error) {
 	parseOptions := []jwt.ParseOption{
-		jwt.WithVerify(jwa.HS512, secret),
+		jwt.WithVerify(jwa.HS512, h.tokenSecret),
 		jwt.WithValidate(true),
 		jwt.WithAudience("users"),
 		jwt.WithIssuer("https://github.com/xeptore/wireguard-manager"),

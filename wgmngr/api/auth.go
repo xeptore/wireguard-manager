@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-func (s *Handler) IsAuthenticated(ctx context.Context, token string) (bool, error) {
-	_, err := parseVerifyToken(s.tokenSecret, token)
+func (h *Handler) IsAuthenticated(ctx context.Context, token string) (bool, error) {
+	_, err := h.ParseVerifyToken(token)
 	if nil != err {
 		return false, err
 	}

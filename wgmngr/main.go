@@ -87,6 +87,7 @@ func main() {
 	engine.Use(cors.Default())
 	engine.POST("auth/login", login(&handler))
 	engine.GET("auth/check", isAuthenticated(&handler))
+	engine.POST("peers", createPeer(&handler))
 
 	addr := ":8080"
 	log.Info().Str("addr", addr).Msg("starting server...")
@@ -163,6 +164,61 @@ func login(h *api.Handler) func(c *gin.Context) {
 	}
 }
 
+func createPeer(h *api.Handler) func(c *gin.Context) {
+	const reqBodyLimit = len(`{"name":"","description":""}`) + 256 + 10_000
+
+	type Form struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	}
+
+	return func(c *gin.Context) {
+		defer func() {
+			if err := c.Request.Body.Close(); nil != err {
+				log.Error().Err(err).Msg("failed to close request body")
+			}
+		}()
+
+		authCookie, err := c.Cookie("auth")
+		if nil != err {
+			if errors.Is(err, http.ErrNoCookie) {
+				c.Writer.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		tokenClaims, err := h.ParseVerifyToken(authCookie)
+		if nil != err {
+			c.Writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		var f Form
+		if err := parseJsonLimitedReader(c.Request.Body, c.Writer, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
+			return
+		}
+
+		configID, err := h.CreatePeerConfig(c.Request.Context(), api.CreatePeerConfigReq{
+			Name:        f.Name,
+			Description: f.Description,
+			ServerIPv4:  "",
+			ServerIPv6:  "",
+			ResellerID:  tokenClaims.UserID,
+		})
+		if nil != err {
+			log.Error().Err(err).Msg("failed to create peer config")
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusCreated)
+		c.Writer.Write([]byte(configID))
+	}
+}
+
 func isAuthenticated(h *api.Handler) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		if err := c.Request.Body.Close(); nil != err {
@@ -172,6 +228,11 @@ func isAuthenticated(h *api.Handler) func(c *gin.Context) {
 
 		authCookie, err := c.Cookie("auth")
 		if nil != err {
+			if errors.Is(err, http.ErrNoCookie) {
+				c.Writer.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
 			c.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
