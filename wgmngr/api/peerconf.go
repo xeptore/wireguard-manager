@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/go-jet/jet/v2/mysql"
@@ -39,11 +40,11 @@ func getLastPeerIPs(ctx context.Context, db *sql.DB) (string, string, error) {
 }
 
 func findNextIpv4(src string) (string, bool) {
-	return "", false
+	return "10.66.66.2", true
 }
 
 func findNextIpv6(src string) (string, bool) {
-	return "", false
+	return "fd4f:fb5c:33d6:36d4::2", true
 }
 
 func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq) (string, error) {
@@ -83,21 +84,12 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 	if len(stderr.Bytes()) != 0 {
 		return "", errors.New("expected peer private key generation to not to output anything on stderr")
 	}
-	privateKey := stdout.String()
+	privateKey := strings.TrimSpace(stdout.String())
 
-	cmd = exec.Command("wg", "pubkey")
-	cmd.Stdin = bytes.NewBufferString(privateKey)
-	stdout.Reset()
-	stderr.Reset()
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to generate peer public key: %v", err)
+	publicKey, err := wg.Pubkey(privateKey)
+	if nil != err {
+		return "", err
 	}
-	if len(stderr.Bytes()) != 0 {
-		return "", errors.New("expected peer public key generation to not to output anything on stderr")
-	}
-	publicKey := stdout.String()
 
 	cmd = exec.Command("wg", "genpsk")
 	cmd.Stdin = bytes.NewBufferString(privateKey)
@@ -111,7 +103,7 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 	if len(stderr.Bytes()) != 0 {
 		return "", errors.New("expected peer preshared key generation to not to output anything on stderr")
 	}
-	presharedKey := stdout.String()
+	presharedKey := strings.TrimSpace(stdout.String())
 
 	c := m.PeerConfigs{
 		ID:            id,
@@ -144,18 +136,9 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 }
 
 type GetPeerConfigReq struct {
-	ResellerID string
-	ConfigID   string
-}
-
-type WGConfig struct {
-	InterfacePrivateKey string
-	InterfaceAddress    string
-	InterfaceDNS        string
-	PeerPublicKey       string
-	PeerPresharedKey    string
-	PeerEndpoint        string
-	PeerAllowedIPs      string
+	ResellerID   string
+	ConfigID     string
+	ServerPubKey string
 }
 
 func (h *Handler) GetPeerConfig(ctx context.Context, req GetPeerConfigReq) ([]byte, error) {
@@ -180,18 +163,17 @@ func (h *Handler) GetPeerConfig(ctx context.Context, req GetPeerConfigReq) ([]by
 	cfg := ini.Empty()
 	ifaceSec := cfg.Section("Interface")
 	ifaceSec.NewKey("PrivateKey", c.PrivateKey)
-	ifaceSec.NewKey("Address", c.PrivateKey)
-	ifaceSec.NewKey("DNS", c.PrivateKey)
-
+	ifaceSec.NewKey("Address", fmt.Sprintf("%s/32, %s/128", c.Ipv4, c.Ipv6))
+	ifaceSec.NewKey("DNS", "1.1.1.1, 1.0.0.1")
 	peerSec := cfg.Section("Peer")
-	peerSec.NewKey("PublicKey", c.PresharedKey)
+	peerSec.NewKey("PublicKey", req.ServerPubKey)
 	peerSec.NewKey("PresharedKey", c.PresharedKey)
-	peerSec.NewKey("Endpoint", c.PresharedKey)
-	peerSec.NewKey("AllowedIPs", c.PresharedKey)
+	peerSec.NewKey("Endpoint", "db.conisma.com:16438")
+	peerSec.NewKey("AllowedIPs", "0.0.0.0/0, ::/0")
 
 	var out bytes.Buffer
 	if _, err := cfg.WriteTo(&out); nil != err {
-		return nil, fmt.Errorf("failed to write ini config file: %w", err)
+		return nil, fmt.Errorf("failed to serialize ini config: %w", err)
 	}
 
 	return out.Bytes(), nil

@@ -88,6 +88,7 @@ func main() {
 	engine.POST("auth/login", login(&handler))
 	engine.GET("auth/check", isAuthenticated(&handler))
 	engine.POST("peers", createPeer(&handler))
+	engine.GET("peers/:id", getPeer(&handler))
 
 	addr := ":8080"
 	log.Info().Str("addr", addr).Msg("starting server...")
@@ -102,13 +103,13 @@ func isMore(r io.Reader) bool {
 	return !(errors.Is(err, io.EOF) && n == 0)
 }
 
-type ErrorTodo struct{}
+type ErrorTodo string
 
 func (ErrorTodo) Error() string {
 	return ""
 }
 
-var ErrTODO = ErrorTodo{}
+var ErrTODO = ErrorTodo("")
 
 func parseJsonLimitedReader(r io.ReadCloser, w http.ResponseWriter, limit int64, v any) error {
 	decoder := json.NewDecoder(io.LimitReader(r, limit))
@@ -143,6 +144,7 @@ func login(h *api.Handler) func(c *gin.Context) {
 
 		var f Form
 		if err := parseJsonLimitedReader(c.Request.Body, c.Writer, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
+			c.Writer.WriteHeader(http.StatusRequestEntityTooLarge)
 			return
 		}
 
@@ -198,14 +200,15 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 
 		var f Form
 		if err := parseJsonLimitedReader(c.Request.Body, c.Writer, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
+			c.Writer.WriteHeader(http.StatusRequestEntityTooLarge)
 			return
 		}
 
 		configID, err := h.CreatePeerConfig(c.Request.Context(), api.CreatePeerConfigReq{
 			Name:        f.Name,
 			Description: f.Description,
-			ServerIPv4:  "",
-			ServerIPv6:  "",
+			ServerIPv4:  "10.66.66.1/24",
+			ServerIPv6:  "fd4f:fb5c:33d6:36d4::1/64",
 			ResellerID:  tokenClaims.UserID,
 		})
 		if nil != err {
@@ -216,6 +219,51 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 
 		c.Writer.WriteHeader(http.StatusCreated)
 		c.Writer.Write([]byte(configID))
+	}
+}
+
+func getPeer(h *api.Handler) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		if err := c.Request.Body.Close(); nil != err {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			log.Error().Err(err).Msg("failed to close request body")
+		}
+
+		authCookie, err := c.Cookie("auth")
+		if nil != err {
+			if errors.Is(err, http.ErrNoCookie) {
+				c.Writer.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		tokenClaims, err := h.ParseVerifyToken(authCookie)
+		if nil != err {
+			c.Writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		id, ok := c.Params.Get("id")
+		if !ok {
+			c.Writer.WriteHeader(http.StatusUnprocessableEntity)
+			return
+		}
+
+		configContent, err := h.GetPeerConfig(c.Request.Context(), api.GetPeerConfigReq{
+			ResellerID: tokenClaims.UserID,
+			ConfigID:   id,
+		})
+		if nil != err {
+			log.Error().Err(err).Msg("failed to get peer config")
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusOK)
+		c.Writer.Write(configContent)
 	}
 }
 
