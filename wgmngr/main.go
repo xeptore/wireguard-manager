@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -145,21 +146,20 @@ func login(h *api.Handler) func(c *gin.Context) {
 		}
 
 		token, err := h.Login(c.Request.Context(), f.Username, f.Password)
-		if errors.Is(err, api.ErrInvalidCreds) || errors.Is(err, api.ErrUserNotFound) {
-			time.Sleep(1500 * time.Millisecond)
-			c.Writer.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		if nil != err {
+			if errors.Is(err, api.ErrInvalidCreds) || errors.Is(err, api.ErrUserNotFound) {
+				rand.Seed(time.Now().Unix())
+				time.Sleep(time.Duration(1000+rand.Int31n(200)+300) * time.Millisecond)
+				c.Writer.WriteHeader(http.StatusUnauthorized)
+				return
+			}
 
-		if errors.Is(err, api.ErrInternal) {
-			c.Writer.WriteHeader(http.StatusCreated)
-			c.Writer.Write([]byte(token))
+			c.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		c.SetCookie("auth", token, int(time.Duration(time.Minute*15).Seconds()), "/", "localhost", false, true)
 		c.Writer.WriteHeader(http.StatusCreated)
-
 	}
 }
 
