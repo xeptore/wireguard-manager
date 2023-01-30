@@ -99,7 +99,10 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
-	engine.Use(cors.Default())
+	cfg := cors.DefaultConfig()
+	cfg.AllowCredentials = true
+	cfg.AllowOrigins = []string{"http://localhost:3000"}
+	engine.Use(cors.New(cfg))
 	engine.POST("auth/login", login(&handler))
 	engine.GET("auth/check", isAuthenticated(&handler))
 	engine.POST("peers", createPeer(&handler))
