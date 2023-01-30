@@ -46,7 +46,7 @@
           on:click={closeModal}
           aria-label="Close"
         >
-          <i class="fa-solid fa-xmark align-text-top" />
+          <i class="fa-solid fa-xmark" />
         </button>
       </div>
       <div

@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
 import tailwind from "@astrojs/tailwind";
 import svelte from "@astrojs/svelte";
+import solidJs from "@astrojs/solid-js";
 
 // https://astro.build/config
 export default defineConfig({
@@ -9,5 +10,5 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone'
   }),
-  integrations: [tailwind(), svelte()]
+  integrations: [tailwind(), svelte(), solidJs()]
 });
