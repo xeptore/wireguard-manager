@@ -35,11 +35,6 @@
       return;
     }
 
-    if (v.trim().length !== v.length) {
-      passwordValidationError = "Invalid value";
-      return;
-    }
-
     if (v.length > 128) {
       passwordValidationError = "Cannot be longer than 128 characters";
       return;
