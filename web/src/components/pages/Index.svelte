@@ -27,7 +27,7 @@
 {#if showQRCodeModal}
   <PeerQrCodeModal on:close|once={() => (showQRCodeModal = false)}>
     <img
-      class="w-full h-full"
+      class="h-full mx-auto"
       src={`data:image/svg+xml;base64,${qrCodeSvg}`}
       alt=""
     />

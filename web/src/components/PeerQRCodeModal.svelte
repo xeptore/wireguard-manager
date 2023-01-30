@@ -9,7 +9,6 @@
   }
 
   function handleKeyPress(e: KeyboardEvent) {
-    console.log("hello!");
     if (e.key === "Escape") {
       dispatch("close");
     }
@@ -52,7 +51,7 @@
         </button>
       </div>
       <div
-        class="modal-body dark-scrollbars relative p-4 max-h-[76vh] overflow-x-hidden overflow-y-scroll"
+        class="modal-body dark-scrollbars relative p-4 max-h-[76vh] overflow-x-hidden overflow-y-scroll flex h-full"
       >
         <slot />
       </div>
