@@ -99,10 +99,12 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
+
 	cfg := cors.DefaultConfig()
 	cfg.AllowCredentials = true
 	cfg.AllowOrigins = []string{"http://localhost:3000"}
 	engine.Use(cors.New(cfg))
+
 	engine.POST("auth/login", login(&handler))
 	engine.GET("auth/check", isAuthenticated(&handler))
 	engine.POST("peers", createPeer(&handler))
@@ -122,25 +124,22 @@ func isMore(r io.Reader) bool {
 	return !(errors.Is(err, io.EOF) && n == 0)
 }
 
-type ErrorTodo string
+var (
+	ErrRequestBodyTooLarge = errors.New("request body too large")
+	ErrInvalidJSONBody     = errors.New("invalid json request body")
+)
 
-func (ErrorTodo) Error() string {
-	return ""
-}
-
-var ErrTODO = ErrorTodo("")
-
-func parseJsonLimitedReader(r io.ReadCloser, w http.ResponseWriter, limit int64, v any) error {
+func parseJsonLimitedReader(limit int64, r io.ReadCloser, w http.ResponseWriter, v any) error {
 	decoder := json.NewDecoder(io.LimitReader(r, limit))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&v); nil != err {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		return ErrTODO
+		return ErrInvalidJSONBody
 	}
 
 	if isMore(r) {
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
-		return ErrTODO
+		return ErrRequestBodyTooLarge
 	}
 
 	return nil
@@ -162,8 +161,7 @@ func login(h *api.Handler) func(c *gin.Context) {
 		}()
 
 		var f Form
-		if err := parseJsonLimitedReader(c.Request.Body, c.Writer, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
-			c.Writer.WriteHeader(http.StatusRequestEntityTooLarge)
+		if err := parseJsonLimitedReader(int64(reqBodyLimit), c.Request.Body, c.Writer, &f); nil != err {
 			return
 		}
 
@@ -218,8 +216,7 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 		}
 
 		var f Form
-		if err := parseJsonLimitedReader(c.Request.Body, c.Writer, int64(reqBodyLimit), &f); errors.Is(err, ErrTODO) {
-			c.Writer.WriteHeader(http.StatusRequestEntityTooLarge)
+		if err := parseJsonLimitedReader(int64(reqBodyLimit), c.Request.Body, c.Writer, &f); nil != err {
 			return
 		}
 
