@@ -1,22 +1,26 @@
 ---
-import httpStatusCodes from 'http-status-codes';
+import httpStatusCodes from "http-status-codes";
 import Dashboard from "@/layouts/Dashboard.astro";
 import Index from "@/components/pages/Index.svelte";
-import { path } from '@/api';
+import { path } from "@/api";
 
 const authCookie = Astro.cookies.get("auth").value;
 if (authCookie === undefined) {
-  return Astro.redirect("/login");
+  return Astro.redirect("/login?error=401");
 }
 
-const response = await fetch(path('auth/check'), {
+const response = await fetch(path("auth/check"), {
   headers: {
     cookie: `auth=${authCookie}`,
-  }
+  },
 });
 
+if (response.status === httpStatusCodes.UNAUTHORIZED) {
+  return Astro.redirect("/login?error=401");
+}
+
 if (response.status !== httpStatusCodes.OK) {
-  return Astro.redirect("/login");
+  return Astro.redirect("/login?error=500");
 }
 ---
 

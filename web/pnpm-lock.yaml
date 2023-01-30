@@ -7,11 +7,14 @@ specifiers:
   '@astrojs/tailwind': ^3.0.0
   '@babel/core': ^7.20.12
   '@types/node': ^18.11.18
+  '@types/qrcode-svg': ^1.1.1
   astro: ^2.0.2
   autoprefixer: ^10.4.13
   cssnano: ^5.1.14
   http-status-codes: ^2.2.0
+  p-waterfall: ^3.0.0
   postcss: ^8.4.21
+  qrcode-svg: ^1.1.0
   solid-js: ^1.6.9
   svelte: ^3.55.1
   tailwindcss: ^3.2.4
@@ -25,6 +28,8 @@ dependencies:
   '@astrojs/tailwind': 3.0.0_uhsc6pehih5huiqhsy5i7sy5um
   astro: 2.0.2_@types+node@18.11.18
   http-status-codes: 2.2.0
+  p-waterfall: 3.0.0
+  qrcode-svg: 1.1.0
   solid-js: 1.6.9
   svelte: 3.55.1
   tailwindcss: 3.2.4_postcss@8.4.21
@@ -32,6 +37,7 @@ dependencies:
 devDependencies:
   '@babel/core': 7.20.12
   '@types/node': 18.11.18
+  '@types/qrcode-svg': 1.1.1
   autoprefixer: 10.4.13_postcss@8.4.21
   cssnano: 5.1.14_postcss@8.4.21
   postcss: 8.4.21
@@ -756,6 +762,10 @@ packages:
   /@types/parse5/6.0.3:
     resolution: {integrity: sha512-SuT16Q1K51EAVPz1K29DJ/sXjhSQ0zjvsypYJ6tlwVsRV9jwW5Adq2ch8Dq8kDBCkYnELS7N7VNCSB5nC56t/g==}
     dev: false
+
+  /@types/qrcode-svg/1.1.1:
+    resolution: {integrity: sha512-uTuEgFXMknpun//Jj6b1R8T8LiMi9fNpH+cnhZr4b7col2HHTMmjYfm/WOZ7nzjuGpk+oTrpHhePe1qlWtHWTA==}
+    dev: true
 
   /@types/resolve/1.20.2:
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -2603,9 +2613,21 @@ packages:
       p-limit: 3.1.0
     dev: false
 
+  /p-reduce/3.0.0:
+    resolution: {integrity: sha512-xsrIUgI0Kn6iyDYm9StOpOeK29XM1aboGji26+QEortiFST1hGZaUQOLhtEbqHErPpGW/aSz6allwK2qcptp0Q==}
+    engines: {node: '>=12'}
+    dev: false
+
   /p-try/2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
+    dev: false
+
+  /p-waterfall/3.0.0:
+    resolution: {integrity: sha512-+DWIZJfgRUzPhv9lLzwb3ILlE+YLpva4ko31j0Z/P9BilqhMZnZibx4qyK3wnIIipu4embJf9WOSVjHmjNKiYg==}
+    engines: {node: '>=12'}
+    dependencies:
+      p-reduce: 3.0.0
     dev: false
 
   /parse-latin/5.0.1:
@@ -3081,6 +3103,11 @@ packages:
 
   /property-information/6.2.0:
     resolution: {integrity: sha512-kma4U7AFCTwpqq5twzC1YVIDXSqg6qQK6JN0smOw8fgRy1OkMi0CYSzFmsy6dnqSenamAtj0CyXMUJ1Mf6oROg==}
+    dev: false
+
+  /qrcode-svg/1.1.0:
+    resolution: {integrity: sha512-XyQCIXux1zEIA3NPb0AeR8UMYvXZzWEhgdBgBjH9gO7M48H9uoHzviNz8pXw3UzrAcxRRRn9gxHewAVK7bn9qw==}
+    hasBin: true
     dev: false
 
   /queue-microtask/1.2.3:

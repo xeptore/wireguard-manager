@@ -1,6 +1,8 @@
 <script lang="ts">
+  import pWaterfall from "p-waterfall";
   import { createEventDispatcher } from "svelte";
   import { fly } from "svelte/transition";
+
   const dispatch = createEventDispatcher();
 
   function closeModal() {
@@ -11,6 +13,37 @@
     if (e.key === "Escape") {
       dispatch("close");
     }
+  }
+
+  async function handleSubmit(formElement: HTMLFormElement) {
+    await pWaterfall(
+      [
+        async (formData) => {
+          const values = Object.fromEntries(formData.entries());
+          try {
+            return await fetch("http://localhost:8080/peers", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              redirect: "follow",
+              referrerPolicy: "no-referrer",
+              credentials: "include",
+              body: JSON.stringify(values),
+            });
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
+        },
+        async (apiRes) => {
+          const x = await apiRes.text();
+          dispatch("success", x);
+          closeModal();
+        },
+      ],
+      new FormData(formElement)
+    );
   }
 </script>
 
@@ -29,16 +62,16 @@
   <div
     in:fly={{ y: 200, duration: 300 }}
     out:fly={{ y: 200, duration: 300 }}
-    class="modal-dialog modal-dialog-scrollable pointer-events-none fixed flex h-full"
+    class="modal-dialog modal-dialog-scrollable pointer-events-none fixed flex h-full w-full"
   >
     <div
-      class="modal-content border-none shadow-lg flex flex-col w-2/3 h-5/6 m-auto pointer-events-auto text-white bg-gray-800 rounded-md outline-none text-current"
+      class="modal-content border-none shadow-lg flex flex-col w-2/3 m-auto pointer-events-auto text-white bg-gray-800 rounded-md outline-none text-current"
     >
       <div
         class="modal-header flex items-center justify-between p-4 border-b border-gray-500 rounded-t-md"
       >
         <h5 class="text-xl font-medium leading-normal text-white">
-          Modal title
+          New Client
         </h5>
         <button
           type="button"
@@ -50,37 +83,46 @@
         </button>
       </div>
       <div
-        class="modal-body dark-scrollbars relative p-4 max-h-[76vh] overflow-hidden overflow-y-scroll"
+        class="modal-body dark-scrollbars relative p-4 max-h-[76vh] overflow-x-hidden overflow-y-scroll"
       >
-        <p>
-          This is some placeholder content to show the scrolling behavior for
-          modals. We use repeated line breaks to demonstrate how content can
-          exceed minimum inner height, thereby showing inner scrolling. When
-          content becomes longer than the predefined max-height of modal,
-          content will be cropped and scrollable within the modal.
-        </p>
-        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br
-        /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br
-        /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br
-        /><br /><br /><br /><br />
-        <p>This content should appear at the bottom after you scroll.</p>
-      </div>
-      <div
-        class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 border-t border-gray-500 rounded-b-md"
-      >
-        <button
-          type="button"
-          class="inline-block px-6 py-2.5 bg-transparent ring-2 ring-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white ring-inset text-sm rounded-lg shadow-md hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out"
-          on:click={closeModal}
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="inline-block px-6 py-2.5 text-white text-sm rounded-lg shadow-md hover:shadow-lg ring-blue-500 bg-blue-600 hover:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out ml-1"
-        >
-          Create
-        </button>
+        <form on:submit|preventDefault={(e) => handleSubmit(e.currentTarget)}>
+          <div class="mb-6 last:mb-0">
+            <label class="block font-bold mb-2" for="name">Name</label>
+            <input
+              id="name"
+              name="name"
+              autocomplete="name"
+              class="px-3 py-2 max-w-full border-gray-700 rounded w-full dark:placeholder-gray-400 focus:ring focus:ring-blue-600 focus:border-blue-600 focus:outline-none h-12 border bg-gray-800"
+              placeholder="Ali Agha"
+            />
+          </div>
+          <div class="mb-6 last:mb-0">
+            <label class="block font-bold mb-2" for="description"
+              >Description</label
+            >
+            <div>
+              <div class="relative">
+                <input
+                  id="description"
+                  name="description"
+                  type="description"
+                  autocomplete="off"
+                  class="px-3 py-2 max-w-full border-gray-700 rounded w-full dark:placeholder-gray-400 focus:ring focus:ring-blue-600 focus:border-blue-600 focus:outline-none h-12 border bg-gray-800"
+                  placeholder="Here goes some description..."
+                />
+              </div>
+            </div>
+          </div>
+          <hr class="my-6 -mx-6 dark:border-gray-800 border-t" />
+          <div class="-mb-3 text-center">
+            <button
+              class="w-full focus:outline-none uppercase transition-colors focus:ring duration-150 border cursor-pointer rounded-lg border-violet-600 ring-violet-700 bg-violet-500 text-white hover:bg-violet-600 mb-3 py-2 px-3"
+              type="submit"
+            >
+              <span class="px-2">Create</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
