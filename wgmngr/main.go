@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -153,6 +154,30 @@ func login(h *api.Handler) func(c *gin.Context) {
 		Password string `json:"password"`
 	}
 
+	validateForm := func(f *Form) error {
+		if len(f.Password) == 0 {
+			return errors.New("password is required")
+		}
+
+		if len(f.Password) > 128 {
+			return errors.New("password cannot be longer than 128 characters")
+		}
+
+		if len(f.Username) == 0 {
+			return errors.New("username is required")
+		}
+
+		if len(f.Username) != len(strings.TrimSpace(f.Username)) {
+			return errors.New("invalid username")
+		}
+
+		if len(f.Username) > 64 {
+			return errors.New("username cannot be longer than 64 characters")
+		}
+
+		return nil
+	}
+
 	return func(c *gin.Context) {
 		defer func() {
 			if err := c.Request.Body.Close(); nil != err {
@@ -162,6 +187,12 @@ func login(h *api.Handler) func(c *gin.Context) {
 
 		var f Form
 		if err := parseJsonLimitedReader(int64(reqBodyLimit), c.Request.Body, c.Writer, &f); nil != err {
+			return
+		}
+
+		if err := validateForm(&f); nil != err {
+			c.Writer.WriteHeader(http.StatusUnprocessableEntity)
+			c.Writer.Write([]byte(err.Error()))
 			return
 		}
 
@@ -191,6 +222,30 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 		Description string `json:"description"`
 	}
 
+	validateForm := func(f *Form) error {
+		if len(f.Name) == 0 {
+			return errors.New("name is required")
+		}
+
+		if len(f.Name) > 256 {
+			return errors.New("name cannot be longer than 256 characters")
+		}
+
+		if len(f.Name) != len(strings.TrimSpace(f.Name)) {
+			return errors.New("invalid name")
+		}
+
+		if len(f.Description) > 10000 {
+			return errors.New("description cannot be longer than 10,000 characters")
+		}
+
+		if len(f.Description) != len(strings.TrimSpace(f.Description)) {
+			return errors.New("invalid description")
+		}
+
+		return nil
+	}
+
 	return func(c *gin.Context) {
 		defer func() {
 			if err := c.Request.Body.Close(); nil != err {
@@ -217,6 +272,12 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 
 		var f Form
 		if err := parseJsonLimitedReader(int64(reqBodyLimit), c.Request.Body, c.Writer, &f); nil != err {
+			return
+		}
+
+		if err := validateForm(&f); nil != err {
+			c.Writer.WriteHeader(http.StatusUnprocessableEntity)
+			c.Writer.Write([]byte(err.Error()))
 			return
 		}
 
