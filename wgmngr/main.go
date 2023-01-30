@@ -24,6 +24,7 @@ import (
 	"github.com/xeptore/wireguard-manager/wgmngr/env"
 	"github.com/xeptore/wireguard-manager/wgmngr/migration"
 	_ "github.com/xeptore/wireguard-manager/wgmngr/migration/seeds"
+	"github.com/xeptore/wireguard-manager/wgmngr/wg"
 )
 
 func main() {
@@ -31,6 +32,11 @@ func main() {
 
 	zerolog.TimeFieldFormat = time.RFC3339
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+
+	if len(os.Args) != 2 {
+		log.Fatal().Msg("server wireguard config file path argument is required")
+	}
+	wgServerConfigFilePath := os.Args[1]
 
 	if err := godotenv.Load(); nil != err {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -80,7 +86,16 @@ func main() {
 	}
 	log.Info().Msg("database migrations executed")
 
-	handler := api.NewHandler([]byte(env.MustGet("AUTH_TOKEN_SECRET")), db)
+	wgServerConf, err := wg.LoadConfig(ctx, wgServerConfigFilePath)
+	if nil != err {
+		log.Fatal().Err(err).Msg("failed to load wireguard server configuration")
+	}
+
+	handler := api.NewHandler(
+		[]byte(env.MustGet("AUTH_TOKEN_SECRET")),
+		db,
+		wgServerConf,
+	)
 
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
@@ -89,6 +104,7 @@ func main() {
 	engine.GET("auth/check", isAuthenticated(&handler))
 	engine.POST("peers", createPeer(&handler))
 	engine.GET("peers/:id", getPeer(&handler))
+	engine.GET("peers", getPeers(&handler))
 
 	addr := ":8080"
 	log.Info().Str("addr", addr).Msg("starting server...")
@@ -207,8 +223,6 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 		configID, err := h.CreatePeerConfig(c.Request.Context(), api.CreatePeerConfigReq{
 			Name:        f.Name,
 			Description: f.Description,
-			ServerIPv4:  "10.66.66.1/24",
-			ServerIPv6:  "fd4f:fb5c:33d6:36d4::1/64",
 			ResellerID:  tokenClaims.UserID,
 		})
 		if nil != err {
@@ -264,6 +278,25 @@ func getPeer(h *api.Handler) func(c *gin.Context) {
 
 		c.Writer.WriteHeader(http.StatusOK)
 		c.Writer.Write(configContent)
+	}
+}
+
+func getPeers(h *api.Handler) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		if err := c.Request.Body.Close(); nil != err {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			log.Error().Err(err).Msg("failed to close request body")
+		}
+
+		configsContent, err := h.GetActivePeerConfigs(c.Request.Context())
+		if nil != err {
+			log.Error().Err(err).Msg("failed to get peer configs")
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusOK)
+		c.Writer.Write(configsContent)
 	}
 }
 

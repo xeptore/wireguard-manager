@@ -20,5 +20,7 @@ type PeerConfigs struct {
 	Ipv4          string
 	Ipv6          string
 	PrivateKey    string
+	PublicKey     string
 	PresharedKey  string
+	IsActive      bool
 }

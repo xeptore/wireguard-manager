@@ -85,9 +85,7 @@ func downSeedResellers(tx *sql.Tx) error {
 		usernames[i] = mysql.String(v.Username)
 	}
 
-	stmt := t.Users.DELETE().WHERE(t.Users.Username.IN(usernames...))
-	fmt.Println(stmt.DebugSql())
-	res, err := stmt.Exec(tx)
+	res, err := t.Users.DELETE().WHERE(t.Users.Username.IN(usernames...)).Exec(tx)
 	if nil != err {
 		return err
 	}

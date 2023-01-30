@@ -25,7 +25,9 @@ type peerConfigsTable struct {
 	Ipv4          mysql.ColumnString
 	Ipv6          mysql.ColumnString
 	PrivateKey    mysql.ColumnString
+	PublicKey     mysql.ColumnString
 	PresharedKey  mysql.ColumnString
+	IsActive      mysql.ColumnBool
 
 	AllColumns     mysql.ColumnList
 	MutableColumns mysql.ColumnList
@@ -74,9 +76,11 @@ func newPeerConfigsTableImpl(schemaName, tableName, alias string) peerConfigsTab
 		Ipv4Column          = mysql.StringColumn("ipv4")
 		Ipv6Column          = mysql.StringColumn("ipv6")
 		PrivateKeyColumn    = mysql.StringColumn("private_key")
+		PublicKeyColumn     = mysql.StringColumn("public_key")
 		PresharedKeyColumn  = mysql.StringColumn("preshared_key")
-		allColumns          = mysql.ColumnList{IDColumn, NameColumn, DescriptionColumn, GeneratedByIDColumn, GeneratedAtColumn, Ipv4Column, Ipv6Column, PrivateKeyColumn, PresharedKeyColumn}
-		mutableColumns      = mysql.ColumnList{NameColumn, DescriptionColumn, GeneratedByIDColumn, GeneratedAtColumn, Ipv4Column, Ipv6Column, PrivateKeyColumn, PresharedKeyColumn}
+		IsActiveColumn      = mysql.BoolColumn("is_active")
+		allColumns          = mysql.ColumnList{IDColumn, NameColumn, DescriptionColumn, GeneratedByIDColumn, GeneratedAtColumn, Ipv4Column, Ipv6Column, PrivateKeyColumn, PublicKeyColumn, PresharedKeyColumn, IsActiveColumn}
+		mutableColumns      = mysql.ColumnList{NameColumn, DescriptionColumn, GeneratedByIDColumn, GeneratedAtColumn, Ipv4Column, Ipv6Column, PrivateKeyColumn, PublicKeyColumn, PresharedKeyColumn, IsActiveColumn}
 	)
 
 	return peerConfigsTable{
@@ -91,7 +95,9 @@ func newPeerConfigsTableImpl(schemaName, tableName, alias string) peerConfigsTab
 		Ipv4:          Ipv4Column,
 		Ipv6:          Ipv6Column,
 		PrivateKey:    PrivateKeyColumn,
+		PublicKey:     PublicKeyColumn,
 		PresharedKey:  PresharedKeyColumn,
+		IsActive:      IsActiveColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

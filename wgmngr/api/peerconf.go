@@ -6,18 +6,18 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os/exec"
-	"strings"
+	"net"
+	"net/netip"
 	"time"
 
 	"github.com/go-jet/jet/v2/mysql"
 	"github.com/go-jet/jet/v2/qrm"
 	gonanoid "github.com/matoous/go-nanoid/v2"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"gopkg.in/ini.v1"
 
 	m "github.com/xeptore/wireguard-manager/wgmngr/db/gen/latest/wgmngr/model"
 	t "github.com/xeptore/wireguard-manager/wgmngr/db/gen/latest/wgmngr/table"
-	"github.com/xeptore/wireguard-manager/wgmngr/wg"
 )
 
 var (
@@ -29,22 +29,63 @@ type CreatePeerConfigReq struct {
 	Name        string
 	Description string
 	ResellerID  string
-	ServerIPv4  string
-	ServerIPv6  string
 }
 
-func getLastPeerIPs(ctx context.Context, db *sql.DB) (string, string, error) {
+func getLastPeerIPs(ctx context.Context, db *sql.DB) (ipv4 string, ipv6 string, err error) {
 	var c m.PeerConfigs
-	err := t.PeerConfigs.SELECT(t.PeerConfigs.Ipv4, t.PeerConfigs.Ipv6).LIMIT(1).ORDER_BY(t.PeerConfigs.GeneratedAt.DESC()).QueryContext(ctx, db, &c)
+	err = t.PeerConfigs.SELECT(t.PeerConfigs.Ipv4, t.PeerConfigs.Ipv6).LIMIT(1).ORDER_BY(t.PeerConfigs.GeneratedAt.DESC()).QueryContext(ctx, db, &c)
 	return c.Ipv4, c.Ipv6, err
 }
 
-func findNextIpv4(src string) (string, bool) {
-	return "10.66.66.2", true
+func invalidIPv4AddressErr(addr string) error {
+	return fmt.Errorf("%w: %s", ErrInvalidIPv4Address, addr)
 }
 
-func findNextIpv6(src string) (string, bool) {
-	return "fd4f:fb5c:33d6:36d4::2", true
+func invalidIPv6AddressErr(addr string) error {
+	return fmt.Errorf("%w: %s", ErrInvalidIPv6Address, addr)
+}
+
+var (
+	ErrInvalidIPv4Address = errors.New("invalid ipv4 address")
+	ErrInvalidIPv6Address = errors.New("invalid ipv6 address")
+)
+
+func findNextIpv4(srcIPv4 string, serverIPv4Net *net.IPNet) (string, error) {
+	ip, err := netip.ParseAddr(srcIPv4)
+	if nil != err || !ip.Is4() || !ip.IsValid() || !ip.IsPrivate() || ip.IsLoopback() || ip.IsMulticast() || ip.IsUnspecified() {
+		return "", invalidIPv4AddressErr(srcIPv4)
+	}
+
+	nextIP := ip.Next()
+	if !nextIP.IsValid() || !nextIP.IsPrivate() || nextIP.IsUnspecified() || !serverIPv4Net.Contains(nextIP.AsSlice()) {
+		return "", ErrNoMoreIPv4Address
+	}
+
+	nextIPstr := nextIP.String()
+	if nextIPstr == "invalid IP" {
+		return "", ErrNoMoreIPv4Address
+	}
+
+	return nextIPstr, nil
+}
+
+func findNextIpv6(srcIPv6 string, serverIPv6Net *net.IPNet) (string, error) {
+	ip, err := netip.ParseAddr(srcIPv6)
+	if nil != err || !ip.Is6() || !ip.IsValid() || !ip.IsPrivate() || ip.IsLoopback() || ip.IsMulticast() || ip.IsUnspecified() {
+		return "", invalidIPv6AddressErr(srcIPv6)
+	}
+
+	nextIP := ip.Next()
+	if !nextIP.IsValid() || !nextIP.IsPrivate() || nextIP.IsUnspecified() || !serverIPv6Net.Contains(nextIP.AsSlice()) {
+		return "", ErrNoMoreIPv6Address
+	}
+
+	nextIPstr := nextIP.StringExpanded()
+	if nextIPstr == "invalid IP" {
+		return "", ErrNoMoreIPv6Address
+	}
+
+	return nextIPstr, nil
 }
 
 func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq) (string, error) {
@@ -58,52 +99,45 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 		if !errors.Is(err, qrm.ErrNoRows) {
 			return "", fmt.Errorf("failed to get last peer ip addresses: %v", err)
 		}
-
-		lastIpv4 = req.ServerIPv4
-		lastIpv6 = req.ServerIPv6
 	}
 
-	ipv4, ok := findNextIpv4(lastIpv4)
-	if !ok {
-		return "", ErrNoMoreIPv4Address
+	serverIPv4, serverIPv4Net, err := net.ParseCIDR(h.wgServerConf.ServerIPv4CIDR)
+	if nil != err {
+		return "", err
+	}
+	if lastIpv4 == "" {
+
+		lastIpv4 = serverIPv4.String()
 	}
 
-	ipv6, ok := findNextIpv6(lastIpv6)
-	if !ok {
-		return "", ErrNoMoreIPv6Address
-	}
-
-	cmd := exec.Command("wg", "genkey")
-	var stdout, stderr bytes.Buffer
-	stdout.Grow(44)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to generate peer private key: %v", err)
-	}
-	if len(stderr.Bytes()) != 0 {
-		return "", errors.New("expected peer private key generation to not to output anything on stderr")
-	}
-	privateKey := strings.TrimSpace(stdout.String())
-
-	publicKey, err := wg.Pubkey(privateKey)
+	ipv4, err := findNextIpv4(lastIpv4, serverIPv4Net)
 	if nil != err {
 		return "", err
 	}
 
-	cmd = exec.Command("wg", "genpsk")
-	cmd.Stdin = bytes.NewBufferString(privateKey)
-	stdout.Reset()
-	stderr.Reset()
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to generate peer preshared key: %v", err)
+	serverIPv6, serverIPv6Net, err := net.ParseCIDR(h.wgServerConf.ServerIPv6CIDR)
+	if nil != err {
+		return "", err
 	}
-	if len(stderr.Bytes()) != 0 {
-		return "", errors.New("expected peer preshared key generation to not to output anything on stderr")
+	if lastIpv6 == "" {
+
+		lastIpv6 = serverIPv6.String()
 	}
-	presharedKey := strings.TrimSpace(stdout.String())
+
+	ipv6, err := findNextIpv6(lastIpv6, serverIPv6Net)
+	if nil != err {
+		return "", err
+	}
+
+	key, err := wgtypes.GeneratePrivateKey()
+	if err != nil {
+		return "", err
+	}
+
+	presharedKey, err := wgtypes.GenerateKey()
+	if err != nil {
+		return "", err
+	}
 
 	c := m.PeerConfigs{
 		ID:            id,
@@ -113,8 +147,10 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 		GeneratedByID: req.ResellerID,
 		Ipv4:          ipv4,
 		Ipv6:          ipv6,
-		PrivateKey:    privateKey,
-		PresharedKey:  presharedKey,
+		PrivateKey:    key.String(),
+		PublicKey:     key.PublicKey().String(),
+		PresharedKey:  presharedKey.String(),
+		IsActive:      true,
 	}
 	res, err := t.PeerConfigs.INSERT(t.PeerConfigs.AllColumns).MODEL(c).ExecContext(ctx, h.db)
 	if nil != err {
@@ -128,17 +164,14 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 		return "", fmt.Errorf("expected 1 row to be inserted, got %d", rows)
 	}
 
-	if err := wg.EnablePeer("wg0", publicKey, presharedKey); nil != err {
-		return "", fmt.Errorf("failed to enable peer: %v", err)
-	}
+	// TODO: Signal wireguard to reload config
 
 	return c.ID, nil
 }
 
 type GetPeerConfigReq struct {
-	ResellerID   string
-	ConfigID     string
-	ServerPubKey string
+	ResellerID string
+	ConfigID   string
 }
 
 func (h *Handler) GetPeerConfig(ctx context.Context, req GetPeerConfigReq) ([]byte, error) {
@@ -148,27 +181,15 @@ func (h *Handler) GetPeerConfig(ctx context.Context, req GetPeerConfigReq) ([]by
 		return nil, err
 	}
 
-	/*
-	   [Interface]
-	   PrivateKey = SKeW6PUVxfry4gm3u7zZl4xRzJagrpzWXD2r3D4K+l4=
-	   Address = 10.66.66.64/32, fd4f:fb5c:33d6:36d4::40/128
-	   DNS = 1.1.1.1, 1.0.0.1
-
-	   [Peer]
-	   PublicKey = +jbF/7wsCxZLeaJ4ABV3tGiL6mkYaLDL1rZZJy7L9T4=
-	   PresharedKey = LMXhQh+mBRbGPG6iICDntJxrrnfnqZNCTCVN8RI4qu8=
-	   Endpoint = db.conisma.com:16438
-	   AllowedIPs = 0.0.0.0/0, ::/0
-	*/
 	cfg := ini.Empty()
 	ifaceSec := cfg.Section("Interface")
 	ifaceSec.NewKey("PrivateKey", c.PrivateKey)
 	ifaceSec.NewKey("Address", fmt.Sprintf("%s/32, %s/128", c.Ipv4, c.Ipv6))
 	ifaceSec.NewKey("DNS", "1.1.1.1, 1.0.0.1")
 	peerSec := cfg.Section("Peer")
-	peerSec.NewKey("PublicKey", req.ServerPubKey)
+	peerSec.NewKey("PublicKey", h.wgServerConf.PublicKey)
 	peerSec.NewKey("PresharedKey", c.PresharedKey)
-	peerSec.NewKey("Endpoint", "db.conisma.com:16438")
+	peerSec.NewKey("Endpoint", fmt.Sprintf("%s:%s", h.wgServerConf.PublicHost, h.wgServerConf.ListenPort))
 	peerSec.NewKey("AllowedIPs", "0.0.0.0/0, ::/0")
 
 	var out bytes.Buffer

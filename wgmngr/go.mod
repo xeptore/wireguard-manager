@@ -14,6 +14,7 @@ require (
 	github.com/pressly/goose/v3 v3.9.0
 	github.com/rs/zerolog v1.29.0
 	golang.org/x/crypto v0.5.0
+	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20221104135756-97bc4ad4a1cb
 	gopkg.in/ini.v1 v1.67.0
 )
 
