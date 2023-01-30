@@ -226,11 +226,23 @@ func createPeer(h *api.Handler) func(c *gin.Context) {
 			ResellerID:  tokenClaims.UserID,
 		})
 		if nil != err {
-			log.Error().Err(err).Msg("failed to create peer config")
+			if errors.Is(err, api.ErrInvalidIPv4Address) || errors.Is(err, api.ErrInvalidIPv6Address) {
+				log.Error().Err(err).Msg("invalid ip address")
+				c.Writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			if errors.Is(err, api.ErrNoMoreIPv4Address) || errors.Is(err, api.ErrNoMoreIPv6Address) {
+				log.Error().Err(err).Msg("no more ip address to associate")
+				c.Writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			log.Error().Err(err).Msg("failed to create peer config by unknown error")
 			c.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
+		c.Header("Content-Type", "text/plain; charset=utf-8")
 		c.Writer.WriteHeader(http.StatusCreated)
 		c.Writer.Write([]byte(configID))
 	}
@@ -276,6 +288,7 @@ func getPeer(h *api.Handler) func(c *gin.Context) {
 			return
 		}
 
+		c.Header("Content-Type", "text/plain; charset=utf-8")
 		c.Writer.WriteHeader(http.StatusOK)
 		c.Writer.Write(configContent)
 	}
@@ -295,6 +308,7 @@ func getPeers(h *api.Handler) func(c *gin.Context) {
 			return
 		}
 
+		c.Header("Content-Type", "text/plain; charset=utf-8")
 		c.Writer.WriteHeader(http.StatusOK)
 		c.Writer.Write(configsContent)
 	}

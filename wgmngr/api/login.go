@@ -67,5 +67,6 @@ func (s *Handler) Login(ctx context.Context, username, passwd string) (string, e
 		log.Error().Err(err).Msg("failed to generate token")
 		return "", err
 	}
+
 	return token, nil
 }

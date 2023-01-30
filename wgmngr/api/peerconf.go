@@ -106,7 +106,6 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 		return "", err
 	}
 	if lastIpv4 == "" {
-
 		lastIpv4 = serverIPv4.String()
 	}
 
@@ -120,7 +119,6 @@ func (h *Handler) CreatePeerConfig(ctx context.Context, req CreatePeerConfigReq)
 		return "", err
 	}
 	if lastIpv6 == "" {
-
 		lastIpv6 = serverIPv6.String()
 	}
 
