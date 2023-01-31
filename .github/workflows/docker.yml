@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+      contents: read
     concurrency:
       cancel-in-progress: false
       group: ${{ format('{0}-{1}', github.event_name, github.ref_name) }}
